@@ -20,14 +20,23 @@ public sealed class DisconnectedDcsBiosClient : IDcsBiosClient
         remove { }
     }
 
+    public event EventHandler<DcsBiosDataReceived>? DataReceived
+    {
+        add { }
+        remove { }
+    }
+
     public ConnectionStatus Status => ConnectionStatus.Disconnected;
+    public string? Aircraft => null;
+    public long PacketsReceived => 0;
+    public DateTimeOffset? LastReceivedAt => null;
 
     public Task ConnectAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     public Task DisconnectAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     public ValueTask SendCommandAsync(string controlId, string argument, CancellationToken cancellationToken = default) =>
-        ValueTask.FromException(new NotSupportedException("DCS-BIOS command transmission is disabled in milestone 1."));
+        ValueTask.FromException(new NotSupportedException("DCS-BIOS command transmission is disabled in read-only mode."));
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

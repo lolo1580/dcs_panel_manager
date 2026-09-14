@@ -7,17 +7,47 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-
-- translated the user interface, logs, validation messages, comments, tests, and all
-  repository documentation to English.
-
 ### Planned
 
-- read-only DCS-BIOS connection;
-- DCS World and active aircraft detection;
-- DCS-BIOS metadata import;
-- received DCS-BIOS data in Live Monitor.
+- profile and mapping editor;
+- controlled DCS-BIOS command transmission;
+- PZ55 LED and PZ70 LCD/LED output.
+
+## [0.2.0] - 2026-09-14
+
+Read-only DCS-BIOS integration milestone.
+
+### Added
+
+- UDP multicast listener for the official DCS-BIOS export stream on
+  `239.255.50.10:5010`;
+- incremental binary protocol parser supporting split buffers and frame synchronization;
+- in-memory DCS-BIOS address space with frame-consistent string reads;
+- DCS-BIOS connection, inactivity, and fault detection;
+- active aircraft detection from `_ACFT_NAME` at the official metadata address;
+- automatic metadata discovery under `Saved Games\DCS*\Scripts\DCS-BIOS\doc\json`;
+- aircraft alias resolution and JSON control metadata import;
+- DCS-BIOS dashboard status, packet counters, metadata state, and Live Monitor events;
+- five tests for protocol parsing, memory writes, and metadata import;
+- DCS-BIOS protocol research and architecture documentation.
+
+### Changed
+
+- replaced the inactive milestone client with a real read-only listener;
+- translated the user interface, logs, validation messages, comments, tests, and all
+  repository documentation to English;
+- bumped the project version to `0.2.0`.
+
+### Safety
+
+- command transmission remains disabled and no command socket is created;
+- hardware monitoring continues when DCS-BIOS is absent or the listener cannot start.
+
+### Environment validation
+
+- application starts successfully with PZ55/PZ70 connected;
+- no local DCS-BIOS installation was present during validation, so live simulator data
+  and aircraft detection remain to be validated with DCS World running.
 
 ## [0.1.0] - 2026-09-14
 

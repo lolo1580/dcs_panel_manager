@@ -31,7 +31,9 @@ public partial class App : Application
             services.AddSingleton<ActivityHub>();
             services.AddSingleton<IActivitySink>(provider => provider.GetRequiredService<ActivityHub>());
             services.AddSingleton<IHardwareService, LogitechHidService>();
-            services.AddSingleton<IDcsBiosClient, DisconnectedDcsBiosClient>();
+            services.AddSingleton<DcsBiosOptions>();
+            services.AddSingleton<IDcsBiosMetadataProvider, JsonDcsBiosMetadataProvider>();
+            services.AddSingleton<IDcsBiosClient, UdpDcsBiosClient>();
             services.AddSingleton<ProfileValidator>();
             services.AddSingleton<JsonProfileRepository>();
             services.AddSingleton<MainWindowViewModel>();
@@ -39,7 +41,7 @@ public partial class App : Application
 
             _services = services.BuildServiceProvider();
             desktop.MainWindow = _services.GetRequiredService<MainWindow>();
-            desktop.Exit += (_, _) => _services.Dispose();
+            desktop.Exit += (_, _) => _services.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
 
         base.OnFrameworkInitializationCompleted();

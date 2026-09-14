@@ -18,11 +18,11 @@
                     </Border>
                     <StackPanel>
                         <TextBlock Text="DCS Panel Manager" FontWeight="SemiBold" FontSize="17" />
-                        <TextBlock Text="Hardware bridge - Milestone 1" Classes="muted" FontSize="11" />
+                        <TextBlock Text="Hardware and DCS-BIOS monitor - Milestone 2" Classes="muted" FontSize="11" />
                     </StackPanel>
                 </StackPanel>
                 <Border Grid.Column="2" Background="#1E293B" CornerRadius="20" Padding="12,6">
-                    <TextBlock Text="DCS offline" Foreground="#FCA5A5" FontSize="12" />
+                    <TextBlock Text="{Binding DcsBiosStatus}" FontSize="12" />
                 </Border>
             </Grid>
         </Border>
@@ -39,7 +39,7 @@
                             <Border Classes="card">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="DCS World" Classes="muted" />
-                                    <TextBlock Text="{Binding DcsWorldStatus}" FontSize="21" FontWeight="SemiBold" Foreground="#FCA5A5" />
+                                    <TextBlock Text="{Binding DcsWorldStatus}" FontSize="21" FontWeight="SemiBold" />
                                     <TextBlock Text="Detected aircraft" Classes="muted" FontSize="12" />
                                     <TextBlock Text="{Binding DetectedAircraft}" />
                                 </StackPanel>
@@ -47,8 +47,8 @@
                             <Border Grid.Column="1" Classes="card">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="DCS-BIOS" Classes="muted" />
-                                    <TextBlock Text="{Binding DcsBiosStatus}" FontSize="21" FontWeight="SemiBold" Foreground="#FCA5A5" />
-                                    <TextBlock Text="No socket is opened in this milestone" Classes="muted" FontSize="12" />
+                                    <TextBlock Text="{Binding DcsBiosStatus}" FontSize="21" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding DcsBiosEndpoint}" Classes="muted" FontSize="12" />
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="1" Classes="card">
@@ -115,13 +115,42 @@
 
             <TabItem Header="Profiles"><TextBlock Margin="32" Text="Profiles - editor planned for a future milestone" Classes="heading" /></TabItem>
             <TabItem Header="Mappings"><TextBlock Margin="32" Text="Mappings - engine ready, editor coming later" Classes="heading" /></TabItem>
-            <TabItem Header="DCS-BIOS"><TextBlock Margin="32" Text="DCS-BIOS - transport disabled in milestone 1" Classes="heading" /></TabItem>
+            <TabItem Header="DCS-BIOS">
+                <ScrollViewer>
+                    <StackPanel Margin="32" Spacing="18">
+                        <StackPanel>
+                            <TextBlock Text="DCS-BIOS" Classes="heading" />
+                            <TextBlock Text="Read-only export stream and metadata discovery" Classes="muted" />
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                            <Border Classes="card">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Export stream" Classes="muted" />
+                                    <TextBlock Text="{Binding DcsBiosStatus}" FontSize="21" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding DcsBiosEndpoint}" Foreground="#93C5FD" />
+                                    <TextBlock Text="{Binding DcsBiosPacketCount, StringFormat='Packets received: {0}'}" />
+                                    <TextBlock Text="{Binding LastDcsBiosData}" Classes="muted" FontSize="12" />
+                                    <TextBlock Text="Command transmission is disabled" Foreground="#86EFAC" FontSize="12" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Classes="card">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Control metadata" Classes="muted" />
+                                    <TextBlock Text="{Binding MetadataStatus}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding MetadataDirectory}" Classes="muted" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" />
+                                    <TextBlock Text="Metadata is loaded from the active aircraft aliases" Classes="muted" FontSize="12" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
             <TabItem Header="Live Monitor">
                 <Grid Margin="32" RowDefinitions="Auto,Auto,*" RowSpacing="14">
                     <StackPanel>
                         <TextBlock Text="Live Monitor" Classes="heading" />
-                        <TextBlock Text="Raw HID reports, decoded controls, and errors" Classes="muted" />
+                        <TextBlock Text="Raw HID reports, decoded controls, DCS-BIOS data, and errors" Classes="muted" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="18">
                         <CheckBox Content="Hardware" IsChecked="{Binding ShowHardware}" />

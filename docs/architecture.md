@@ -21,5 +21,9 @@ Key decisions:
    backends can be added without modifying a hardware driver.
 5. JSON profiles are versioned and validated. `NoSync` is explicitly selected by the
    generic profile.
-6. The milestone 1 DCS-BIOS client is an inactive boundary: it opens no sockets and
-   transmits no commands.
+6. The DCS-BIOS transport is read-only in milestone 2. It joins the official UDP
+   multicast export stream but deliberately owns no command-transmission socket.
+7. The binary parser and 64 KiB state memory are independent of networking. String
+   values such as `_ACFT_NAME` are read only at frame synchronization boundaries.
+8. Aircraft controls come from DCS-BIOS `AircraftAliases.json` and module JSON files;
+   aircraft-specific identifiers are not embedded in Core or hardware drivers.

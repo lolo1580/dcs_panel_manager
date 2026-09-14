@@ -11,8 +11,8 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> The project is currently at an early milestone. HID input works, but no commands are
-> sent to DCS World or to panel LED/LCD outputs yet.
+> Version 0.2 adds read-only DCS-BIOS monitoring. No commands are sent to DCS World or
+> to panel LED/LCD outputs yet.
 
 ## Current features
 
@@ -29,6 +29,11 @@ with DCS World; this project does not reimplement DCS-BIOS.
 - safe `NoSync` strategy by default;
 - dependency injection and structured logging;
 - command-line hardware diagnostic tool.
+- read-only DCS-BIOS UDP multicast listener;
+- DCS-BIOS connection and inactivity detection;
+- active aircraft detection through the official `_ACFT_NAME` export;
+- automatic import of aircraft control metadata from DCS-BIOS JSON files;
+- DCS-BIOS packet count and sampled receive activity in Live Monitor.
 
 ## Hardware validation
 
@@ -49,15 +54,26 @@ The application currently contains these pages:
 - **Dashboard**: DCS World, DCS-BIOS, device, and active profile status;
 - **Devices**: detailed list of detected panels;
 - **Live Monitor**: raw HID reports and decoded events in real time;
-- **Profiles**, **Mappings**, **DCS-BIOS**, and **Settings**: placeholders for upcoming
-  milestones.
+- **DCS-BIOS**: connection, packet, aircraft metadata, and read-only safety status;
+- **Profiles**, **Mappings**, and **Settings**: placeholders for upcoming milestones.
 
 ## Requirements
 
 - Windows 10 or Windows 11;
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0);
 - a PZ55 or PZ70 for hardware features;
-- DCS World and DCS-BIOS are not required for the current milestone.
+- [DCS-BIOS](https://github.com/DCS-Skunkworks/dcs-bios) for simulator data. The
+  application and hardware monitoring still start when it is absent.
+
+DCS Panel Manager discovers metadata in the standard installation path:
+
+```text
+%USERPROFILE%\Saved Games\DCS*\Scripts\DCS-BIOS\doc\json
+```
+
+With DCS World running in a mission, the application listens to the official export
+multicast group `239.255.50.10:5010`. The Dashboard changes to **Connected** after a
+valid protocol frame is received and displays the active aircraft when available.
 
 Check the installed SDK:
 
@@ -78,7 +94,7 @@ dotnet build .\DCSPanelManager.sln -c Release
 dotnet test .\DCSPanelManager.sln -c Release --no-build
 ```
 
-Current reference status: **0 warnings, 0 errors, 9 passing tests**.
+Current reference status: **0 warnings, 0 errors, 14 passing tests**.
 
 ## Run the application
 
@@ -110,12 +126,13 @@ src/
 |-- DCSPanel.Core/               Abstractions, events, and mapping engine
 |-- DCSPanel.Hardware/           Generic hardware models and contracts
 |-- DCSPanel.Hardware.Logitech/  HID enumeration and PZ55/PZ70 protocol
-|-- DCSPanel.DCSBIOS/            DCS-BIOS boundary, currently inactive
+|-- DCSPanel.DCSBIOS/            Read-only UDP transport, parser, and metadata import
 |-- DCSPanel.Profiles/           JSON profiles, persistence, and validation
 `-- DCSPanel.App/                Avalonia UI and dependency composition
 
 tests/
 |-- DCSPanel.Core.Tests/
+|-- DCSPanel.DCSBIOS.Tests/
 `-- DCSPanel.Hardware.Tests/
 
 tools/
@@ -129,6 +146,7 @@ Additional documentation:
 
 - [Architecture decisions](docs/architecture.md)
 - [HID protocol research](docs/hid-research.md)
+- [DCS-BIOS protocol research](docs/dcs-bios-research.md)
 - [Version history](CHANGELOG.md)
 
 ## Main dependencies
@@ -142,13 +160,6 @@ Additional documentation:
 Core, Hardware, Profiles, and DCSBIOS avoid unnecessary external dependencies.
 
 ## Roadmap
-
-### Milestone 2 - Read-only DCS-BIOS
-
-- connection and disconnection detection;
-- active aircraft detection;
-- control metadata import;
-- received DCS-BIOS data in Live Monitor.
 
 ### Milestone 3 - Mappings and commands
 
@@ -171,8 +182,9 @@ Core, Hardware, Profiles, and DCSBIOS avoid unnecessary external dependencies.
 
 ## Operational safety
 
-The current version sends no DCS-BIOS commands and writes no LED or LCD data. Loading a
-profile does not automatically send physical switch positions to DCS.
+The current version opens only the DCS-BIOS export listener. It creates no command
+socket, sends no DCS-BIOS commands, and writes no LED or LCD data. Loading a profile
+does not automatically send physical switch positions to DCS.
 
 ## License
 
