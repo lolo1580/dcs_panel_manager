@@ -11,7 +11,8 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> Version 0.2 adds read-only DCS-BIOS monitoring. No commands are sent to DCS World or
+> Version 0.2.1 adds read-only DCS-BIOS monitoring and a refined cockpit-inspired UI.
+> No commands are sent to DCS World or
 > to panel LED/LCD outputs yet.
 
 ## Current features
@@ -51,9 +52,11 @@ while panels are idle and close cleanly when the application stops.
 
 The application currently contains these pages:
 
-- **Dashboard**: DCS World, DCS-BIOS, device, and active profile status;
-- **Devices**: detailed list of detected panels;
-- **Live Monitor**: raw HID reports and decoded events in real time;
+- **Dashboard**: system overview, live DCS World/DCS-BIOS status, connected panels, and
+  active profile;
+- **Devices**: detailed cards for every detected panel and instance;
+- **Live Monitor**: structured and filterable event console for HID, mapping, DCS-BIOS,
+  and error events;
 - **DCS-BIOS**: connection, packet, aircraft metadata, and read-only safety status;
 - **Profiles**, **Mappings**, and **Settings**: placeholders for upcoming milestones.
 

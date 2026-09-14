@@ -2,26 +2,96 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="DCSPanel.App.App"
              RequestedThemeVariant="Dark">
-
     <Application.Styles>
         <FluentTheme />
+
         <Style Selector="Window">
             <Setter Property="FontFamily" Value="Inter" />
-            <Setter Property="Background" Value="#0B1120" />
+            <Setter Property="Background" Value="#070C16" />
+            <Setter Property="Foreground" Value="#E8EEF8" />
         </Style>
-        <Style Selector="Border.card">
-            <Setter Property="Background" Value="#121A2A" />
-            <Setter Property="BorderBrush" Value="#243047" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="20" />
+
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="Transparent" />
         </Style>
-        <Style Selector="TextBlock.heading">
-            <Setter Property="FontSize" Value="28" />
+        <Style Selector="TabItem">
+            <Setter Property="MinWidth" Value="208" />
+            <Setter Property="Height" Value="52" />
+            <Setter Property="Margin" Value="8,3" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#8996AA" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Background" Value="#111B2D" />
+            <Setter Property="Foreground" Value="#D7E1F1" />
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Background" Value="#17243A" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
+
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="#101827" />
+            <Setter Property="BorderBrush" Value="#1E2B40" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="22" />
+        </Style>
+        <Style Selector="Border.card:pointerover">
+            <Setter Property="BorderBrush" Value="#334967" />
+        </Style>
+        <Style Selector="Border.subtleCard">
+            <Setter Property="Background" Value="#0B1321" />
+            <Setter Property="BorderBrush" Value="#1B293D" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="14" />
+        </Style>
+        <Style Selector="Border.chip">
+            <Setter Property="Background" Value="#111C2D" />
+            <Setter Property="BorderBrush" Value="#22324A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Padding" Value="11,6" />
+        </Style>
+
+        <Style Selector="TextBlock.pageTitle">
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="LetterSpacing" Value="-0.4" />
+        </Style>
+        <Style Selector="TextBlock.heading">
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.sectionTitle">
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.statusValue">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.eyebrow">
+            <Setter Property="Foreground" Value="#6F8099" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="LetterSpacing" Value="1.1" />
+        </Style>
         <Style Selector="TextBlock.muted">
-            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="Foreground" Value="#8290A5" />
+        </Style>
+        <Style Selector="TextBlock.mono">
+            <Setter Property="FontFamily" Value="Consolas" />
+        </Style>
+
+        <Style Selector="CheckBox.monitorFilter">
+            <Setter Property="Foreground" Value="#AAB6C8" />
         </Style>
     </Application.Styles>
 </Application>

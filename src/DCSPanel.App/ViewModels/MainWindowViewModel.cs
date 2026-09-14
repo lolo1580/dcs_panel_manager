@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media;
 using Avalonia.Threading;
 using DCSPanel.Core.Events;
 using DCSPanel.Core.State;
@@ -20,6 +21,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly List<ActivityEventViewModel> _allActivities = [];
     private string _dcsWorldStatus = "Disconnected";
     private string _dcsBiosStatus = "Disconnected";
+    private IBrush _dcsWorldStatusBrush = Brush.Parse("#F87171");
+    private IBrush _dcsBiosStatusBrush = Brush.Parse("#F87171");
     private string _detectedAircraft = "-";
     private string _metadataStatus;
     private long _dcsBiosPacketCount;
@@ -64,6 +67,18 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         get => _dcsBiosStatus;
         private set => SetProperty(ref _dcsBiosStatus, value);
+    }
+
+    public IBrush DcsWorldStatusBrush
+    {
+        get => _dcsWorldStatusBrush;
+        private set => SetProperty(ref _dcsWorldStatusBrush, value);
+    }
+
+    public IBrush DcsBiosStatusBrush
+    {
+        get => _dcsBiosStatusBrush;
+        private set => SetProperty(ref _dcsBiosStatusBrush, value);
     }
 
     public string DetectedAircraft
@@ -179,6 +194,15 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 _ => "Disconnected"
             };
             DcsWorldStatus = state.Status == ConnectionStatus.Connected ? "Connected" : "Disconnected";
+            DcsBiosStatusBrush = state.Status switch
+            {
+                ConnectionStatus.Connected => Brush.Parse("#34D399"),
+                ConnectionStatus.Connecting => Brush.Parse("#FBBF24"),
+                _ => Brush.Parse("#F87171")
+            };
+            DcsWorldStatusBrush = state.Status == ConnectionStatus.Connected
+                ? Brush.Parse("#34D399")
+                : Brush.Parse("#F87171");
             DetectedAircraft = state.Aircraft ?? "-";
             if (state.Aircraft is not null)
             {

@@ -13,6 +13,25 @@ project uses [Semantic Versioning](https://semver.org/).
 - controlled DCS-BIOS command transmission;
 - PZ55 LED and PZ70 LCD/LED output.
 
+## [0.2.1] - 2026-09-14
+
+User interface refinement release.
+
+### Changed
+
+- redesigned the application shell with a consistent cockpit-inspired dark theme;
+- added a clearer navigation rail with page identifiers and selected states;
+- rebuilt the Dashboard around a system overview, live status cards, connected hardware,
+  and DCS-BIOS activity;
+- improved connection indicators with live status colors;
+- redesigned Devices with clearer identity, connection, serial, and instance information;
+- expanded the Profiles, Mappings, and Settings placeholders into informative workflow
+  previews;
+- redesigned the DCS-BIOS page around stream, packet, endpoint, and metadata panels;
+- reformatted Live Monitor as a structured event console with a fixed header and filters;
+- improved spacing, typography, contrast, and visual consistency throughout the app;
+- bumped the project version to `0.2.1`.
+
 ## [0.2.0] - 2026-09-14
 
 Read-only DCS-BIOS integration milestone.
