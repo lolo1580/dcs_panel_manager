@@ -32,7 +32,7 @@ public partial class App : Application
             services.AddSingleton<IActivitySink>(provider => provider.GetRequiredService<ActivityHub>());
             services.AddSingleton<IHardwareService, LogitechHidService>();
             services.AddSingleton<DcsBiosOptions>();
-            services.AddSingleton<IDcsBiosMetadataProvider, JsonDcsBiosMetadataProvider>();
+            services.AddSingleton<IDcsBiosMetadataProvider>(_ => new JsonDcsBiosMetadataProvider());
             services.AddSingleton<IDcsBiosClient, UdpDcsBiosClient>();
             services.AddSingleton<ProfileValidator>();
             services.AddSingleton<JsonProfileRepository>();

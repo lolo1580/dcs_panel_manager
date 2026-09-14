@@ -7,6 +7,11 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- DCS-BIOS metadata discovery now uses the automatic Saved Games lookup when the
+  application is created through dependency injection.
+
 ### Planned
 
 - profile and mapping editor;
