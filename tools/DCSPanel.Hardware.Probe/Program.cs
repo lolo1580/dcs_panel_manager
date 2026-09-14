@@ -56,10 +56,10 @@ internal static partial class Program
     }
 
     [LoggerMessage(EventId = 2001, Level = LogLevel.Information,
-        Message = "Test HID démarré pour {DurationSeconds} secondes. Actionnez les commandes des deux panneaux.")]
+        Message = "HID test started for {DurationSeconds} seconds. Operate controls on both panels.")]
     private static partial void LogProbeStarted(ILogger logger, int durationSeconds);
 
     [LoggerMessage(EventId = 2002, Level = LogLevel.Information,
-        Message = "Résumé : connexions={Connected}, rapports bruts={RawReports}, entrées décodées={DecodedInputs}, erreurs={Errors}")]
+        Message = "Summary: connections={Connected}, raw reports={RawReports}, decoded inputs={DecodedInputs}, errors={Errors}")]
     private static partial void LogProbeSummary(ILogger logger, int connected, int rawReports, int decodedInputs, int errors);
 }

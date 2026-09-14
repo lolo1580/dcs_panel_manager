@@ -30,6 +30,6 @@ public sealed class ProfileValidatorTests
         var result = new ProfileValidator().Validate(profile);
 
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, error => error.Contains("schéma", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(result.Errors, error => error.Contains("schema", StringComparison.OrdinalIgnoreCase));
     }
 }

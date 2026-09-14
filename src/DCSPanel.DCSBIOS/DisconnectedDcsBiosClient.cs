@@ -27,7 +27,7 @@ public sealed class DisconnectedDcsBiosClient : IDcsBiosClient
     public Task DisconnectAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     public ValueTask SendCommandAsync(string controlId, string argument, CancellationToken cancellationToken = default) =>
-        ValueTask.FromException(new NotSupportedException("L'envoi DCS-BIOS n'est pas activé dans la milestone 1."));
+        ValueTask.FromException(new NotSupportedException("DCS-BIOS command transmission is disabled in milestone 1."));
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

@@ -1,74 +1,73 @@
 # DCS Panel Manager
 
-Application Windows moderne permettant de détecter, surveiller et, à terme, configurer
-des panneaux de simulation de vol pour DCS World.
+DCS Panel Manager is a modern Windows application for detecting, monitoring, and
+eventually configuring flight simulation panels for DCS World.
 
-La première version prend en charge :
+The first supported devices are:
 
-- Logitech/Saitek Pro Flight Switch Panel **PZ55** ;
+- Logitech/Saitek Pro Flight Switch Panel **PZ55**;
 - Logitech/Saitek Pro Flight Multi Panel **PZ70**.
 
-Le projet utilise C#, .NET 10 et Avalonia UI. DCS-BIOS sera l'interface principale avec
-DCS World, sans réimplémenter DCS-BIOS.
+The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
+with DCS World; this project does not reimplement DCS-BIOS.
 
-> Le projet est actuellement en phase initiale. La lecture HID fonctionne, mais aucune
-> commande n'est encore envoyée à DCS World ou aux sorties LED/LCD des panneaux.
+> The project is currently at an early milestone. HID input works, but no commands are
+> sent to DCS World or to panel LED/LCD outputs yet.
 
-## Fonctionnalités disponibles
+## Current features
 
-- détection automatique des PZ55 et PZ70 ;
-- connexion, déconnexion et reconnexion à chaud ;
-- prise en charge de plusieurs périphériques et instances ;
-- identification par chemin HID complet et numéro de série lorsqu'il est disponible ;
-- affichage du VID, PID, chemin d'instance et état de connexion ;
-- lecture des rapports HID bruts ;
-- décodage des switches, boutons, sélecteurs et encodeurs ;
-- Live Monitor avec filtres Hardware, Mapping, DCS-BIOS et Error ;
-- moteur de mapping indépendant du backend ;
-- profils JSON versionnés et validés ;
-- stratégie sûre `NoSync` activée par défaut ;
-- injection de dépendances et logs structurés ;
-- outil de diagnostic matériel en ligne de commande.
+- automatic PZ55 and PZ70 detection;
+- hot-plug connection, disconnection, and reconnection;
+- support for multiple devices and multiple instances of the same model;
+- individual identification using the complete HID path and serial number when available;
+- display of VID, PID, instance path, and connection state;
+- raw HID report capture;
+- decoding for switches, buttons, selectors, and encoders;
+- Live Monitor with Hardware, Mapping, DCS-BIOS, and Error filters;
+- backend-independent mapping engine;
+- versioned and validated JSON profiles;
+- safe `NoSync` strategy by default;
+- dependency injection and structured logging;
+- command-line hardware diagnostic tool.
 
-## Validation matérielle
+## Hardware validation
 
-La lecture a été testée avec du matériel réel sous Windows :
+HID input has been tested with real hardware on Windows:
 
-| Panneau | USB | État |
+| Panel | USB identifier | Status |
 |---|---|---|
-| PZ55 Switch Panel | `VID 06A3 / PID 0D67` | Détection, rapports et switches validés |
-| PZ70 Multi Panel | `VID 06A3 / PID 0D06` | Détection, rapports et contrôles validés |
+| PZ55 Switch Panel | `VID 06A3 / PID 0D67` | Detection, reports, and switches validated |
+| PZ70 Multi Panel | `VID 06A3 / PID 0D06` | Detection, reports, and controls validated |
 
-Les tests ont notamment permis de valider les changements d'état du PZ55 et les
-positions de sélecteur du PZ70. Les flux restent ouverts lorsque les panneaux sont
-inactifs et se ferment proprement à l'arrêt de l'application.
+Testing confirmed PZ55 state changes and PZ70 selector positions. Streams remain open
+while panels are idle and close cleanly when the application stops.
 
-## Interface
+## User interface
 
-L'application contient les pages suivantes :
+The application currently contains these pages:
 
-- **Dashboard** : état de DCS World, DCS-BIOS, des périphériques et du profil actif ;
-- **Devices** : liste détaillée des panneaux détectés ;
-- **Live Monitor** : rapports HID et événements décodés en temps réel ;
-- **Profiles**, **Mappings**, **DCS-BIOS** et **Settings** : structure préparée pour les
-  prochaines milestones.
+- **Dashboard**: DCS World, DCS-BIOS, device, and active profile status;
+- **Devices**: detailed list of detected panels;
+- **Live Monitor**: raw HID reports and decoded events in real time;
+- **Profiles**, **Mappings**, **DCS-BIOS**, and **Settings**: placeholders for upcoming
+  milestones.
 
-## Prérequis
+## Requirements
 
-- Windows 10 ou Windows 11 ;
-- SDK [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0) ;
-- un PZ55 ou PZ70 pour les fonctions matérielles ;
-- DCS World et DCS-BIOS ne sont pas encore requis pour la milestone actuelle.
+- Windows 10 or Windows 11;
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0);
+- a PZ55 or PZ70 for hardware features;
+- DCS World and DCS-BIOS are not required for the current milestone.
 
-Vérifier le SDK installé :
+Check the installed SDK:
 
 ```powershell
 dotnet --version
 ```
 
-## Compiler et tester
+## Build and test
 
-Depuis PowerShell :
+From PowerShell:
 
 ```powershell
 git clone https://github.com/lolo1580/dcs_panel_manager.git
@@ -79,104 +78,102 @@ dotnet build .\DCSPanelManager.sln -c Release
 dotnet test .\DCSPanelManager.sln -c Release --no-build
 ```
 
-État actuel de référence : **0 avertissement, 0 erreur, 9 tests réussis**.
+Current reference status: **0 warnings, 0 errors, 9 passing tests**.
 
-## Lancer l'application
+## Run the application
 
 ```powershell
 dotnet run --project .\src\DCSPanel.App\DCSPanel.App.csproj -c Release
 ```
 
-Branchez les panneaux, puis ouvrez **Devices** ou **Live Monitor**.
+Connect the panels, then open **Devices** or **Live Monitor**.
 
-## Diagnostic matériel
+## Hardware diagnostics
 
-Le probe utilise exactement le même service HID que l'application. Le nombre final est
-la durée du test en secondes :
+The probe uses the same HID service as the desktop application. The final argument is
+the test duration in seconds:
 
 ```powershell
 dotnet run --project .\tools\DCSPanel.Hardware.Probe\DCSPanel.Hardware.Probe.csproj -c Release -- 20
 ```
 
-Pendant le test, actionnez les switches, boutons et molettes. Un test réussi affiche les
-deux connexions, les rapports bruts, les entrées décodées et `erreurs=0`.
+Operate switches, buttons, and encoders during the test. A successful run reports both
+connections, raw reports, decoded inputs, and `errors=0`.
 
-Si l'ouverture échoue, fermez Logitech Flight Panels, DCSFlightpanels ou toute autre
-application susceptible d'utiliser le périphérique de façon exclusive.
+If a panel cannot be opened, close Logitech Flight Panels, DCSFlightpanels, or any other
+application that may be using the HID device exclusively.
 
 ## Architecture
 
 ```text
 src/
-├── DCSPanel.Core/               Abstractions, événements et moteur de mapping
-├── DCSPanel.Hardware/           Modèles et contrats matériels génériques
-├── DCSPanel.Hardware.Logitech/  Énumération HID et protocole PZ55/PZ70
-├── DCSPanel.DCSBIOS/            Frontière DCS-BIOS, inactive pour le moment
-├── DCSPanel.Profiles/           Profils JSON, stockage et validation
-└── DCSPanel.App/                Interface Avalonia et composition DI
+|-- DCSPanel.Core/               Abstractions, events, and mapping engine
+|-- DCSPanel.Hardware/           Generic hardware models and contracts
+|-- DCSPanel.Hardware.Logitech/  HID enumeration and PZ55/PZ70 protocol
+|-- DCSPanel.DCSBIOS/            DCS-BIOS boundary, currently inactive
+|-- DCSPanel.Profiles/           JSON profiles, persistence, and validation
+`-- DCSPanel.App/                Avalonia UI and dependency composition
 
 tests/
-├── DCSPanel.Core.Tests/
-└── DCSPanel.Hardware.Tests/
+|-- DCSPanel.Core.Tests/
+`-- DCSPanel.Hardware.Tests/
 
 tools/
-└── DCSPanel.Hardware.Probe/
+`-- DCSPanel.Hardware.Probe/
 ```
 
-Le Core ne dépend ni de Logitech, ni de HID, ni de DCS-BIOS. Les détails du protocole
-Logitech restent confinés au module `DCSPanel.Hardware.Logitech`.
+Core does not depend on Logitech, HID, or DCS-BIOS. Logitech protocol details remain
+confined to `DCSPanel.Hardware.Logitech`.
 
-Documentation complémentaire :
+Additional documentation:
 
-- [Décisions d'architecture](docs/architecture.md)
-- [Recherche sur les protocoles HID](docs/hid-research.md)
-- [Historique des versions](CHANGELOG.md)
+- [Architecture decisions](docs/architecture.md)
+- [HID protocol research](docs/hid-research.md)
+- [Version history](CHANGELOG.md)
 
-## Dépendances principales
+## Main dependencies
 
-- **Avalonia 12** : interface graphique multiplateforme demandée par le projet ;
-- **HidSharp** : accès aux périphériques et rapports HID bruts ;
-- **Microsoft.Extensions.DependencyInjection** : composition modulaire ;
-- **Microsoft.Extensions.Logging** : logs structurés ;
-- **xUnit** : tests unitaires.
+- **Avalonia 12**: the requested cross-platform user interface framework;
+- **HidSharp**: raw HID device and report access;
+- **Microsoft.Extensions.DependencyInjection**: modular dependency composition;
+- **Microsoft.Extensions.Logging**: structured logging;
+- **xUnit**: unit testing.
 
-Les projets Core, Hardware, Profiles et DCSBIOS n'ajoutent aucune dépendance externe
-inutile.
+Core, Hardware, Profiles, and DCSBIOS avoid unnecessary external dependencies.
 
 ## Roadmap
 
-### Milestone 2 — DCS-BIOS en lecture seule
+### Milestone 2 - Read-only DCS-BIOS
 
-- connexion et détection de déconnexion ;
-- détection de l'avion actif ;
-- import des métadonnées de contrôles ;
-- affichage des données reçues dans Live Monitor.
+- connection and disconnection detection;
+- active aircraft detection;
+- control metadata import;
+- received DCS-BIOS data in Live Monitor.
 
-### Milestone 3 — Mappings et commandes
+### Milestone 3 - Mappings and commands
 
-- éditeur de profils et mappings ;
-- envoi contrôlé de commandes DCS-BIOS ;
-- profils initiaux F-16C et F/A-18C ;
-- maintien de `NoSync` comme stratégie sûre par défaut.
+- profile and mapping editor;
+- controlled DCS-BIOS command transmission;
+- initial F-16C and F/A-18C profiles;
+- `NoSync` retained as the safe default strategy.
 
-### Milestone 4 — Feedback matériel
+### Milestone 4 - Hardware feedback
 
-- LED du PZ55 ;
-- LCD et LED du PZ70 ;
-- mappings de retour DCS State → Hardware Output.
+- PZ55 LEDs;
+- PZ70 LCD and LEDs;
+- DCS State -> Hardware Output feedback mappings.
 
-### Plus tard
+### Later
 
-- modifiers, layers et actions multiples ;
-- backend clavier ;
-- prise en charge du Stream Deck et d'autres périphériques.
+- modifiers, layers, and multiple actions;
+- keyboard backend;
+- Stream Deck and additional device support.
 
-## Sécurité de fonctionnement
+## Operational safety
 
-La version actuelle n'envoie aucune commande à DCS-BIOS et n'écrit aucune donnée dans
-les LED ou LCD. Charger un profil n'envoie pas automatiquement la position des switches
-physiques vers DCS.
+The current version sends no DCS-BIOS commands and writes no LED or LCD data. Loading a
+profile does not automatically send physical switch positions to DCS.
 
-## Licence
+## License
 
-Ce projet est distribué sous licence [MIT](LICENSE).
+This project is distributed under the [MIT License](LICENSE).

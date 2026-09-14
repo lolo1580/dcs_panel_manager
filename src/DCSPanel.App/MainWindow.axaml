@@ -18,7 +18,7 @@
                     </Border>
                     <StackPanel>
                         <TextBlock Text="DCS Panel Manager" FontWeight="SemiBold" FontSize="17" />
-                        <TextBlock Text="Hardware bridge · Milestone 1" Classes="muted" FontSize="11" />
+                        <TextBlock Text="Hardware bridge - Milestone 1" Classes="muted" FontSize="11" />
                     </StackPanel>
                 </StackPanel>
                 <Border Grid.Column="2" Background="#1E293B" CornerRadius="20" Padding="12,6">
@@ -33,14 +33,14 @@
                     <StackPanel Margin="32" Spacing="22">
                         <StackPanel>
                             <TextBlock Text="Dashboard" Classes="heading" />
-                            <TextBlock Text="État de DCS World et des panneaux connectés" Classes="muted" />
+                            <TextBlock Text="DCS World and connected panel status" Classes="muted" />
                         </StackPanel>
                         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
                             <Border Classes="card">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="DCS World" Classes="muted" />
                                     <TextBlock Text="{Binding DcsWorldStatus}" FontSize="21" FontWeight="SemiBold" Foreground="#FCA5A5" />
-                                    <TextBlock Text="Aircraft détecté" Classes="muted" FontSize="12" />
+                                    <TextBlock Text="Detected aircraft" Classes="muted" FontSize="12" />
                                     <TextBlock Text="{Binding DetectedAircraft}" />
                                 </StackPanel>
                             </Border>
@@ -48,7 +48,7 @@
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="DCS-BIOS" Classes="muted" />
                                     <TextBlock Text="{Binding DcsBiosStatus}" FontSize="21" FontWeight="SemiBold" Foreground="#FCA5A5" />
-                                    <TextBlock Text="Aucune socket ouverte dans cette milestone" Classes="muted" FontSize="12" />
+                                    <TextBlock Text="No socket is opened in this milestone" Classes="muted" FontSize="12" />
                                 </StackPanel>
                             </Border>
                             <Border Grid.Row="1" Classes="card">
@@ -68,7 +68,7 @@
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="Active Profile" Classes="muted" />
                                     <TextBlock Text="{Binding ActiveProfile}" FontSize="21" FontWeight="SemiBold" />
-                                    <TextBlock Text="Stratégie sûre : NoSync" Classes="muted" FontSize="12" />
+                                    <TextBlock Text="Safe default: NoSync" Classes="muted" FontSize="12" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -81,12 +81,12 @@
                     <StackPanel Margin="32" Spacing="18">
                         <StackPanel>
                             <TextBlock Text="Devices" Classes="heading" />
-                            <TextBlock Text="Panneaux Logitech/Saitek HID compatibles détectés" Classes="muted" />
+                            <TextBlock Text="Detected compatible Logitech/Saitek HID panels" Classes="muted" />
                         </StackPanel>
                         <Border IsVisible="{Binding HasNoDevices}" Classes="card">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Aucun PZ55/PZ70 détecté" FontSize="18" FontWeight="SemiBold" />
-                                <TextBlock Text="Branchez le panneau : la liste se rafraîchit automatiquement." Classes="muted" />
+                                <TextBlock Text="No PZ55/PZ70 detected" FontSize="18" FontWeight="SemiBold" />
+                                <TextBlock Text="Connect a panel; this list refreshes automatically." Classes="muted" />
                             </StackPanel>
                         </Border>
                         <ItemsControl ItemsSource="{Binding Devices}">
@@ -101,8 +101,8 @@
                                             <TextBlock Grid.Row="1" Text="{Binding VidPid}" Foreground="#93C5FD" />
                                             <TextBlock Grid.Row="2" Text="{Binding InstancePath}" Classes="muted" TextWrapping="Wrap" FontFamily="Consolas" FontSize="11" />
                                             <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="20">
-                                                <TextBlock Text="{Binding SerialNumber, StringFormat='Serial : {0}'}" Classes="muted" FontSize="12" />
-                                                <TextBlock Text="{Binding ConnectedAt, StringFormat='Connecté : {0}'}" Classes="muted" FontSize="12" />
+                                                <TextBlock Text="{Binding SerialNumber, StringFormat='Serial: {0}'}" Classes="muted" FontSize="12" />
+                                                <TextBlock Text="{Binding ConnectedAt, StringFormat='Connected: {0}'}" Classes="muted" FontSize="12" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -113,15 +113,15 @@
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="Profiles"><TextBlock Margin="32" Text="Profiles — éditeur prévu dans une prochaine milestone" Classes="heading" /></TabItem>
-            <TabItem Header="Mappings"><TextBlock Margin="32" Text="Mappings — moteur prêt, éditeur à venir" Classes="heading" /></TabItem>
-            <TabItem Header="DCS-BIOS"><TextBlock Margin="32" Text="DCS-BIOS — transport désactivé dans la milestone 1" Classes="heading" /></TabItem>
+            <TabItem Header="Profiles"><TextBlock Margin="32" Text="Profiles - editor planned for a future milestone" Classes="heading" /></TabItem>
+            <TabItem Header="Mappings"><TextBlock Margin="32" Text="Mappings - engine ready, editor coming later" Classes="heading" /></TabItem>
+            <TabItem Header="DCS-BIOS"><TextBlock Margin="32" Text="DCS-BIOS - transport disabled in milestone 1" Classes="heading" /></TabItem>
 
             <TabItem Header="Live Monitor">
                 <Grid Margin="32" RowDefinitions="Auto,Auto,*" RowSpacing="14">
                     <StackPanel>
                         <TextBlock Text="Live Monitor" Classes="heading" />
-                        <TextBlock Text="Rapports HID bruts, contrôles décodés et erreurs" Classes="muted" />
+                        <TextBlock Text="Raw HID reports, decoded controls, and errors" Classes="muted" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="18">
                         <CheckBox Content="Hardware" IsChecked="{Binding ShowHardware}" />
@@ -147,7 +147,7 @@
                     </Border>
                 </Grid>
             </TabItem>
-            <TabItem Header="Settings"><TextBlock Margin="32" Text="Settings — options à venir" Classes="heading" /></TabItem>
+            <TabItem Header="Settings"><TextBlock Margin="32" Text="Settings - options coming later" Classes="heading" /></TabItem>
         </TabControl>
     </Grid>
 </Window>

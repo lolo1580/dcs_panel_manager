@@ -70,7 +70,7 @@ public sealed partial class LogitechHidService(
 
     private async Task MonitorAsync(CancellationToken cancellationToken)
     {
-        activitySink.Publish(new ActivityEvent(DateTimeOffset.Now, ActivityCategory.Hardware, "HID", "Surveillance des panneaux démarrée"));
+        activitySink.Publish(new ActivityEvent(DateTimeOffset.Now, ActivityCategory.Hardware, "HID", "Panel monitoring started"));
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -139,7 +139,7 @@ public sealed partial class LogitechHidService(
         {
             if (!hidDevice.TryOpen(out var stream))
             {
-                throw new IOException("Impossible d'ouvrir le périphérique HID.");
+                throw new IOException("Unable to open the HID device.");
             }
 
             connected.Stream = stream;
@@ -155,8 +155,8 @@ public sealed partial class LogitechHidService(
                 }
                 catch (TimeoutException)
                 {
-                    // HidSharp utilise par défaut une attente de 3 secondes. Un panneau
-                    // silencieux est toujours connecté : on reprend simplement la lecture.
+                    // HidSharp uses a three-second timeout by default. A silent panel
+                    // is still connected, so resume waiting for the next report.
                     continue;
                 }
 
@@ -183,7 +183,7 @@ public sealed partial class LogitechHidService(
         }
         catch (ObjectDisposedException) when (connected.Token.IsCancellationRequested)
         {
-            // Fermeture normale du flux lors de l'arrêt ou d'un débranchement.
+            // Normal stream closure during shutdown or device removal.
         }
         catch (Exception exception)
         {
@@ -194,7 +194,7 @@ public sealed partial class LogitechHidService(
 
     private static ReadOnlyMemory<byte> NormalizeReport(ReadOnlySpan<byte> report)
     {
-        // HidSharp inclut parfois l'octet Report ID (0x00). Le protocole PZ55/PZ70 utile contient 3 octets.
+        // HidSharp may include the Report ID byte (0x00). PZ55/PZ70 input payloads contain three useful bytes.
         var payload = report.Length >= 4 && report[0] == 0 ? report[1..] : report;
         return payload[..Math.Min(payload.Length, 3)].ToArray();
     }
@@ -247,11 +247,11 @@ public sealed partial class LogitechHidService(
 
         var message = hardwareEvent.Kind switch
         {
-            HardwareEventKind.Connected => $"Connecté — {hardwareEvent.Device.Model}",
-            HardwareEventKind.Disconnected => $"Déconnecté — {hardwareEvent.Device.Model}",
+            HardwareEventKind.Connected => $"Connected - {hardwareEvent.Device.Model}",
+            HardwareEventKind.Disconnected => $"Disconnected - {hardwareEvent.Device.Model}",
             HardwareEventKind.RawInput => $"RX {Convert.ToHexString(hardwareEvent.RawReport!.Data.Span)}",
-            HardwareEventKind.Input => $"{hardwareEvent.Input!.ControlId} — {hardwareEvent.Input.Kind}",
-            HardwareEventKind.Error => hardwareEvent.Exception?.Message ?? "Erreur HID",
+            HardwareEventKind.Input => $"{hardwareEvent.Input!.ControlId} - {hardwareEvent.Input.Kind}",
+            HardwareEventKind.Error => hardwareEvent.Exception?.Message ?? "HID error",
             _ => hardwareEvent.Kind.ToString()
         };
         activitySink.Publish(new ActivityEvent(
@@ -261,22 +261,22 @@ public sealed partial class LogitechHidService(
             message));
     }
 
-    [LoggerMessage(EventId = 1001, Level = LogLevel.Error, Message = "Échec de l'énumération HID Logitech")]
+    [LoggerMessage(EventId = 1001, Level = LogLevel.Error, Message = "Failed to enumerate Logitech HID devices")]
     private static partial void LogEnumerationFailure(ILogger logger, Exception exception);
 
-    [LoggerMessage(EventId = 1002, Level = LogLevel.Error, Message = "Erreur de lecture HID pour {DeviceId}")]
+    [LoggerMessage(EventId = 1002, Level = LogLevel.Error, Message = "HID read failed for {DeviceId}")]
     private static partial void LogReadFailure(ILogger logger, string deviceId, Exception exception);
 
-    [LoggerMessage(EventId = 1003, Level = LogLevel.Information, Message = "Panneau connecté : {Model} ({InstancePath})")]
+    [LoggerMessage(EventId = 1003, Level = LogLevel.Information, Message = "Panel connected: {Model} ({InstancePath})")]
     private static partial void LogDeviceConnected(ILogger logger, string model, string instancePath);
 
-    [LoggerMessage(EventId = 1004, Level = LogLevel.Information, Message = "Panneau déconnecté : {Model} ({InstancePath})")]
+    [LoggerMessage(EventId = 1004, Level = LogLevel.Information, Message = "Panel disconnected: {Model} ({InstancePath})")]
     private static partial void LogDeviceDisconnected(ILogger logger, string model, string instancePath);
 
-    [LoggerMessage(EventId = 1005, Level = LogLevel.Debug, Message = "Rapport HID {DeviceType} : {Report}", SkipEnabledCheck = true)]
+    [LoggerMessage(EventId = 1005, Level = LogLevel.Debug, Message = "HID report {DeviceType}: {Report}", SkipEnabledCheck = true)]
     private static partial void LogRawReport(ILogger logger, string deviceType, string report);
 
-    [LoggerMessage(EventId = 1006, Level = LogLevel.Information, Message = "Entrée {DeviceType} : {ControlId} {Kind}", SkipEnabledCheck = true)]
+    [LoggerMessage(EventId = 1006, Level = LogLevel.Information, Message = "Input {DeviceType}: {ControlId} {Kind}", SkipEnabledCheck = true)]
     private static partial void LogInputEvent(ILogger logger, string deviceType, string controlId, string kind);
 
     private sealed class ConnectedDevice(DeviceDescriptor descriptor, CancellationToken parentToken) : IAsyncDisposable

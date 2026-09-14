@@ -21,42 +21,42 @@ public sealed class ProfileValidator
         var errors = new List<string>();
         if (profile is null)
         {
-            errors.Add("Le profil est vide.");
+            errors.Add("The profile is empty.");
             return new ProfileValidationResult(false, errors);
         }
 
         if (profile.SchemaVersion != _supportedSchemaVersion)
         {
-            errors.Add($"Version de schéma non supportée : {profile.SchemaVersion}.");
+            errors.Add($"Unsupported schema version: {profile.SchemaVersion}.");
         }
 
         if (string.IsNullOrWhiteSpace(profile.Id))
         {
-            errors.Add("L'identifiant du profil est requis.");
+            errors.Add("The profile identifier is required.");
         }
 
         if (string.IsNullOrWhiteSpace(profile.DisplayName))
         {
-            errors.Add("Le nom du profil est requis.");
+            errors.Add("The profile display name is required.");
         }
 
         foreach (var device in profile.Devices)
         {
             if (string.IsNullOrWhiteSpace(device.DeviceType))
             {
-                errors.Add("Chaque périphérique doit déclarer un type.");
+                errors.Add("Every device must declare a type.");
             }
 
             foreach (var mapping in device.Mappings)
             {
                 if (string.IsNullOrWhiteSpace(mapping.ControlId))
                 {
-                    errors.Add("Chaque mapping doit cibler un contrôle physique.");
+                    errors.Add("Every mapping must target a physical control.");
                 }
 
                 if (mapping.Actions.Count == 0)
                 {
-                    errors.Add($"Le mapping {mapping.ControlId} ne contient aucune action.");
+                    errors.Add($"Mapping {mapping.ControlId} does not contain any actions.");
                 }
             }
         }

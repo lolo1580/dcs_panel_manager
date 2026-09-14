@@ -33,8 +33,8 @@ public static class LogitechInputDecoder
                 continue;
             }
 
-            // Les encodeurs émettent une impulsion : le front descendant ne doit pas
-            // devenir un second cran dans la même direction.
+            // Encoders emit a pulse. The falling edge must not become a second
+            // detent in the same direction.
             if (definition.IsEncoder && !isActive)
             {
                 continue;

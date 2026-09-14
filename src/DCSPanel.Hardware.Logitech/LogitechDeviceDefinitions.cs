@@ -11,7 +11,7 @@ public static class LogitechDeviceDefinitions
     public static bool TryIdentify(int vendorId, int productId, out DeviceType type, out string model)
     {
         type = DeviceType.Unknown;
-        model = "Périphérique HID inconnu";
+        model = "Unknown HID device";
 
         if (vendorId != SaitekVendorId)
         {
@@ -22,7 +22,7 @@ public static class LogitechDeviceDefinitions
         {
             Pz55ProductId => (DeviceType.LogitechPz55, "Logitech/Saitek Pro Flight Switch Panel (PZ55)"),
             Pz70ProductId => (DeviceType.LogitechPz70, "Logitech/Saitek Pro Flight Multi Panel (PZ70)"),
-            _ => (DeviceType.Unknown, "Périphérique HID inconnu")
+            _ => (DeviceType.Unknown, "Unknown HID device")
         };
 
         return type != DeviceType.Unknown;

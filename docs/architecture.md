@@ -1,25 +1,25 @@
 # Architecture
 
-Les dépendances pointent vers les abstractions, jamais vers l'interface graphique :
+Dependencies point toward abstractions and never toward the user interface:
 
 ```text
 DCSPanel.App
- ├─ DCSPanel.Core
- ├─ DCSPanel.Hardware ──> DCSPanel.Core
- ├─ DCSPanel.Hardware.Logitech ──> Hardware + Core
- ├─ DCSPanel.DCSBIOS ──> Core
- └─ DCSPanel.Profiles ──> Core
+ |-- DCSPanel.Core
+ |-- DCSPanel.Hardware --> DCSPanel.Core
+ |-- DCSPanel.Hardware.Logitech --> Hardware + Core
+ |-- DCSPanel.DCSBIOS --> Core
+ `-- DCSPanel.Profiles --> Core
 ```
 
-Décisions principales :
+Key decisions:
 
-1. `DCSPanel.Core` ne connaît ni Logitech, ni HID, ni DCS-BIOS.
-2. `IHardwareService` représente l'énumération, le hot-plug et les flux d'entrée.
-3. Le driver Logitech transforme les rapports HID en événements génériques, tout en
-   publiant aussi le rapport brut pour le Live Monitor.
-4. Le moteur de mapping sélectionne un backend par nom. DCS-BIOS, le clavier ou un
-   futur backend peuvent donc être ajoutés sans modifier le driver.
-5. Les profils JSON sont versionnés et validés. `NoSync` est le défaut explicite du
-   profil générique.
-6. Le client DCS-BIOS de la milestone 1 est une frontière inactive : aucune socket et
-   aucune commande ne sont émises.
+1. `DCSPanel.Core` has no knowledge of Logitech, HID, or DCS-BIOS.
+2. `IHardwareService` represents enumeration, hot-plug behavior, and input streams.
+3. The Logitech driver converts HID reports into generic events while also publishing
+   raw reports for Live Monitor.
+4. The mapping engine selects a backend by name. DCS-BIOS, keyboard input, or future
+   backends can be added without modifying a hardware driver.
+5. JSON profiles are versioned and validated. `NoSync` is explicitly selected by the
+   generic profile.
+6. The milestone 1 DCS-BIOS client is an inactive boundary: it opens no sockets and
+   transmits no commands.

@@ -25,7 +25,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _activitySink.ActivityPublished += OnActivityPublished;
         DcsWorldStatus = "Disconnected";
         DcsBiosStatus = "Disconnected";
-        DetectedAircraft = "—";
+        DetectedAircraft = "-";
         ActiveProfile = "Generic";
     }
 
@@ -36,7 +36,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public string DcsBiosStatus { get; }
     public string DetectedAircraft { get; }
     public string ActiveProfile { get; }
-    public string DeviceSummary => Devices.Count == 0 ? "Aucun panneau détecté" : $"{Devices.Count} panneau(x) connecté(s)";
+    public string DeviceSummary => Devices.Count == 0 ? "No panels detected" : $"{Devices.Count} panel(s) connected";
     public bool HasNoDevices => Devices.Count == 0;
 
     public bool ShowHardware

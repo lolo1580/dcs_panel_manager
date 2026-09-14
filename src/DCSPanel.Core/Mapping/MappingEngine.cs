@@ -24,7 +24,7 @@ public sealed class MappingEngine(
                         DateTimeOffset.Now,
                         ActivityCategory.Error,
                         nameof(MappingEngine),
-                        $"Backend inconnu : {action.Backend}"));
+                        $"Unknown backend: {action.Backend}"));
                     continue;
                 }
 
@@ -32,7 +32,7 @@ public sealed class MappingEngine(
                     DateTimeOffset.Now,
                     ActivityCategory.Mapping,
                     input.ControlId,
-                    $"{action.Backend} → {action.Command}"));
+                    $"{action.Backend} -> {action.Command}"));
 
                 await executor.ExecuteAsync(action, cancellationToken).ConfigureAwait(false);
             }
