@@ -11,7 +11,7 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> Version 0.3.1 adds read-only DCS-BIOS monitoring, automatic profile selection, a mapping
+> Version 0.3.2 adds read-only DCS-BIOS monitoring, automatic profile selection, a mapping
 > browser, and a refined cockpit-inspired UI.
 > No commands are sent to DCS World or
 > to panel LED/LCD outputs yet.
@@ -113,6 +113,15 @@ dotnet run --project .\src\DCSPanel.App\DCSPanel.App.csproj -c Release
 ```
 
 Connect the panels, then open **Devices** or **Live Monitor**.
+
+## Publish the Windows executable
+
+```powershell
+dotnet publish .\src\DCSPanel.App\DCSPanel.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o .\artifacts\DCSPanelManager-win-x64
+```
+
+Launch `artifacts\DCSPanelManager-win-x64\DCSPanel.App.exe`. Keep the generated
+`profiles` folder beside the executable.
 
 ## Hardware diagnostics
 

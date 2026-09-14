@@ -7,16 +7,29 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Fixed
-
-- DCS-BIOS metadata discovery now uses the automatic Saved Games lookup when the
-  application is created through dependency injection.
-
 ### Planned
 
 - profile and mapping editor;
 - controlled DCS-BIOS command transmission;
 - PZ55 LED and PZ70 LCD/LED output.
+
+## [0.3.2] - 2026-09-14
+
+Reliable DCS-BIOS profile discovery and Windows executable build.
+
+### Added
+
+- self-contained Windows x64 publication for running DCS Panel Manager without a
+  separate .NET installation.
+
+### Fixed
+
+- DCS-BIOS metadata discovery now uses the automatic Saved Games lookup when the
+  application is created through dependency injection.
+
+### Changed
+
+- bumped the project version to `0.3.2`.
 
 ## [0.3.1] - 2026-09-14
 
