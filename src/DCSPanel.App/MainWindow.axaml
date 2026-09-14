@@ -254,15 +254,45 @@
                     <Grid ColumnDefinitions="34,*"><Border Width="25" Height="25" CornerRadius="7" Background="#302647"><TextBlock Text="F" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" /></Border><TextBlock Grid.Column="1" Text="Profiles" VerticalAlignment="Center" /></Grid>
                 </TabItem.Header>
                 <Border Background="#070C16">
-                    <StackPanel Margin="34,30" Spacing="22">
-                        <StackPanel Spacing="4"><TextBlock Text="Profiles" Classes="pageTitle" /><TextBlock Text="Aircraft-specific configurations with safe synchronization" Classes="muted" /></StackPanel>
-                        <Border Classes="card" MaxWidth="720" HorizontalAlignment="Left">
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="18">
-                                <Border Width="52" Height="52" CornerRadius="14" Background="#2E2545"><TextBlock Text="01" Foreground="#C4B5FD" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
-                                <StackPanel Grid.Column="1" Spacing="6"><TextBlock Text="Profile editor is coming next" Classes="sectionTitle" /><TextBlock Text="The versioned profile engine and safe NoSync default are already available. The visual editor will manage aircraft profiles without editing JSON by hand." Classes="muted" TextWrapping="Wrap" /></StackPanel>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
+                    <Grid Margin="34,30" RowDefinitions="Auto,*" RowSpacing="22">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Spacing="4"><TextBlock Text="Profiles" Classes="pageTitle" /><TextBlock Text="Aircraft-specific configurations with safe synchronization" Classes="muted" /></StackPanel>
+                            <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center"><TextBlock Text="{Binding ProfileDirectory}" Classes="mono muted" FontSize="10" /></Border>
+                        </Grid>
+                        <Grid Grid.Row="1" ColumnDefinitions="1.2*,*" ColumnSpacing="14">
+                            <Border Classes="card" Padding="12">
+                                <Grid>
+                                    <TextBlock IsVisible="{Binding HasNoProfiles}" Text="No valid profile found" Classes="muted" Margin="12" />
+                                    <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Background="Transparent" BorderThickness="0">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ProfileViewModel">
+                                                <Border Classes="subtleCard" Margin="0,0,0,8" MinHeight="76">
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="13">
+                                                        <Border Width="40" Height="40" CornerRadius="11" Background="#2E2545" VerticalAlignment="Center"><TextBlock Text="P" Foreground="#C4B5FD" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                                                        <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center"><TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="16" /><TextBlock Text="{Binding Aircraft}" Classes="muted" FontSize="11" /><TextBlock Text="{Binding DevicesSummary}" Classes="muted" FontSize="11" /></StackPanel>
+                                                        <Border Grid.Column="2" Classes="chip" Padding="9,4" VerticalAlignment="Center"><TextBlock Text="{Binding SafetyLabel}" Foreground="#6EE7B7" FontSize="10" /></Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+                            </Border>
+                            <Border Grid.Column="1" Classes="card">
+                                <StackPanel Spacing="16">
+                                    <TextBlock Text="ACTIVE PROFILE" Classes="eyebrow" />
+                                    <TextBlock Text="{Binding SelectedProfile.DisplayName}" Classes="statusValue" />
+                                    <Border Classes="subtleCard"><StackPanel Spacing="5"><TextBlock Text="AIRCRAFT" Classes="eyebrow" /><TextBlock Text="{Binding SelectedProfile.Aircraft}" /></StackPanel></Border>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                        <Border Classes="subtleCard"><StackPanel Spacing="5"><TextBlock Text="DEVICES" Classes="eyebrow" /><TextBlock Text="{Binding SelectedProfile.DeviceCount}" FontSize="20" FontWeight="SemiBold" /></StackPanel></Border>
+                                        <Border Grid.Column="1" Classes="subtleCard"><StackPanel Spacing="5"><TextBlock Text="MAPPINGS" Classes="eyebrow" /><TextBlock Text="{Binding SelectedProfile.MappingCount}" FontSize="20" FontWeight="SemiBold" /></StackPanel></Border>
+                                    </Grid>
+                                    <Border Classes="subtleCard"><StackPanel Spacing="5"><TextBlock Text="SWITCH SYNCHRONIZATION" Classes="eyebrow" /><TextBlock Text="{Binding SelectedProfile.SyncStrategy}" Foreground="#6EE7B7" /></StackPanel></Border>
+                                    <TextBlock Text="Selecting a profile never transmits physical switch positions automatically." Classes="muted" FontSize="11" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
                 </Border>
             </TabItem>
 
@@ -271,22 +301,41 @@
                     <Grid ColumnDefinitions="34,*"><Border Width="25" Height="25" CornerRadius="7" Background="#253349"><TextBlock Text="M" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" /></Border><TextBlock Grid.Column="1" Text="Mappings" VerticalAlignment="Center" /></Grid>
                 </TabItem.Header>
                 <Border Background="#070C16">
-                    <StackPanel Margin="34,30" Spacing="22">
-                        <StackPanel Spacing="4"><TextBlock Text="Mappings" Classes="pageTitle" /><TextBlock Text="Connect physical controls to simulator actions" Classes="muted" /></StackPanel>
-                        <Border Classes="card" MaxWidth="720" HorizontalAlignment="Left">
-                            <StackPanel Spacing="14">
-                                <TextBlock Text="MAPPING PIPELINE" Classes="eyebrow" />
-                                <Grid ColumnDefinitions="*,Auto,*,Auto,*" ColumnSpacing="14">
-                                    <Border Classes="subtleCard"><TextBlock Text="Physical input" HorizontalAlignment="Center" /></Border>
-                                    <TextBlock Grid.Column="1" Text="→" Classes="muted" VerticalAlignment="Center" />
-                                    <Border Grid.Column="2" Classes="subtleCard"><TextBlock Text="Profile mapping" HorizontalAlignment="Center" /></Border>
-                                    <TextBlock Grid.Column="3" Text="→" Classes="muted" VerticalAlignment="Center" />
-                                    <Border Grid.Column="4" Classes="subtleCard"><TextBlock Text="DCS-BIOS action" HorizontalAlignment="Center" /></Border>
-                                </Grid>
-                                <TextBlock Text="The engine is ready. Editing and command transmission remain disabled until the next milestone." Classes="muted" TextWrapping="Wrap" />
-                            </StackPanel>
+                    <Grid Margin="34,30" RowDefinitions="Auto,Auto,*" RowSpacing="18">
+                        <Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="4"><TextBlock Text="Mappings" Classes="pageTitle" /><TextBlock Text="Physical controls and simulator actions from the active profile" Classes="muted" /></StackPanel><Border Grid.Column="1" Classes="chip" VerticalAlignment="Center"><TextBlock Text="{Binding ActiveProfile}" FontWeight="SemiBold" /></Border></Grid>
+                        <Border Grid.Row="1" Classes="card" Padding="15,11">
+                            <Grid ColumnDefinitions="*,Auto,*,Auto,*" ColumnSpacing="12">
+                                <TextBlock Text="Physical input" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="→" Classes="muted" />
+                                <TextBlock Grid.Column="2" Text="Profile mapping" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="3" Text="→" Classes="muted" />
+                                <TextBlock Grid.Column="4" Text="Backend action" HorizontalAlignment="Center" />
+                            </Grid>
                         </Border>
-                    </StackPanel>
+                        <Border Grid.Row="2" Classes="card" Padding="0" ClipToBounds="True">
+                            <Grid RowDefinitions="40,*">
+                                <Border Background="#0C1422" BorderBrush="#1E2B40" BorderThickness="0,0,0,1" Padding="16,0">
+                                    <Grid ColumnDefinitions="130,150,135,100,*,110" ColumnSpacing="12">
+                                        <TextBlock Text="DEVICE" Classes="eyebrow" VerticalAlignment="Center" /><TextBlock Grid.Column="1" Text="CONTROL" Classes="eyebrow" VerticalAlignment="Center" /><TextBlock Grid.Column="2" Text="INPUT" Classes="eyebrow" VerticalAlignment="Center" /><TextBlock Grid.Column="3" Text="BACKEND" Classes="eyebrow" VerticalAlignment="Center" /><TextBlock Grid.Column="4" Text="COMMAND" Classes="eyebrow" VerticalAlignment="Center" /><TextBlock Grid.Column="5" Text="ARGUMENT" Classes="eyebrow" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                                <Grid Grid.Row="1">
+                                    <StackPanel IsVisible="{Binding HasNoMappings}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8"><Border Width="48" Height="48" CornerRadius="24" Background="#18243A"><TextBlock Text="0" Foreground="#8290A5" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="No mappings in this profile" Classes="sectionTitle" HorizontalAlignment="Center" /><TextBlock Text="The safe Generic profile intentionally starts empty." Classes="muted" /></StackPanel>
+                                    <ScrollViewer>
+                                        <ItemsControl ItemsSource="{Binding Mappings}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:MappingViewModel">
+                                                    <Border BorderBrush="#152136" BorderThickness="0,0,0,1" Padding="16,11">
+                                                        <Grid ColumnDefinitions="130,150,135,100,*,110" ColumnSpacing="12"><TextBlock Text="{Binding DeviceType}" Classes="muted" FontSize="11" /><TextBlock Grid.Column="1" Text="{Binding ControlId}" Classes="mono" FontSize="11" /><TextBlock Grid.Column="2" Text="{Binding InputKind}" FontSize="11" /><TextBlock Grid.Column="3" Text="{Binding Backend}" Foreground="#7DD3FC" FontSize="11" /><TextBlock Grid.Column="4" Text="{Binding Command}" Classes="mono" FontSize="11" /><TextBlock Grid.Column="5" Text="{Binding Argument}" Classes="mono muted" FontSize="11" /></Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </Border>
             </TabItem>
 

@@ -7,6 +7,7 @@ using DCSPanel.DCSBIOS;
 using DCSPanel.DCSBIOS.Abstractions;
 using DCSPanel.Hardware.Abstractions;
 using DCSPanel.Hardware.Models;
+using DCSPanel.Profiles;
 
 namespace DCSPanel.App.ViewModels;
 
@@ -17,7 +18,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly IActivitySink _activitySink;
     private readonly IDcsBiosClient _dcsBiosClient;
     private readonly IDcsBiosMetadataProvider _metadataProvider;
+    private readonly ProfileCatalog _profileCatalog;
     private readonly string _dcsBiosEndpoint;
+    private readonly string _profileDirectory;
     private readonly List<ActivityEventViewModel> _allActivities = [];
     private string _dcsWorldStatus = "Disconnected";
     private string _dcsBiosStatus = "Disconnected";
@@ -27,6 +30,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private string _metadataStatus;
     private long _dcsBiosPacketCount;
     private string _lastDcsBiosData = "No data received";
+    private string _activeProfile = "Loading...";
+    private ProfileViewModel? _selectedProfile;
     private bool _showHardware = true;
     private bool _showMapping = true;
     private bool _showDcsBios = true;
@@ -37,13 +42,16 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         IActivitySink activitySink,
         IDcsBiosClient dcsBiosClient,
         IDcsBiosMetadataProvider metadataProvider,
-        DcsBiosOptions dcsBiosOptions)
+        DcsBiosOptions dcsBiosOptions,
+        ProfileCatalog profileCatalog)
     {
         _hardwareService = hardwareService;
         _activitySink = activitySink;
         _dcsBiosClient = dcsBiosClient;
         _metadataProvider = metadataProvider;
+        _profileCatalog = profileCatalog;
         _dcsBiosEndpoint = $"{dcsBiosOptions.MulticastAddress}:{dcsBiosOptions.ReceivePort}";
+        _profileDirectory = Path.Combine(AppContext.BaseDirectory, "profiles");
         _metadataStatus = metadataProvider.MetadataDirectory is null
             ? "Not found in Saved Games"
             : "Ready";
@@ -51,11 +59,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _activitySink.ActivityPublished += OnActivityPublished;
         _dcsBiosClient.StateChanged += OnDcsBiosStateChanged;
         _dcsBiosClient.DataReceived += OnDcsBiosDataReceived;
-        ActiveProfile = "Generic";
     }
 
     public ObservableCollection<DeviceViewModel> Devices { get; } = [];
     public ObservableCollection<ActivityEventViewModel> Activities { get; } = [];
+    public ObservableCollection<ProfileViewModel> Profiles { get; } = [];
+    public ObservableCollection<MappingViewModel> Mappings { get; } = [];
 
     public string DcsWorldStatus
     {
@@ -107,9 +116,57 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public string DcsBiosEndpoint => _dcsBiosEndpoint;
     public string MetadataDirectory => _metadataProvider.MetadataDirectory ?? "DCS-BIOS is not installed in Saved Games";
-    public string ActiveProfile { get; }
+    public string ActiveProfile
+    {
+        get => _activeProfile;
+        private set => SetProperty(ref _activeProfile, value);
+    }
+
+    public ProfileViewModel? SelectedProfile
+    {
+        get => _selectedProfile;
+        set
+        {
+            if (SetProperty(ref _selectedProfile, value) && value is not null)
+            {
+                ActiveProfile = value.DisplayName;
+                RefreshMappings(value);
+                RaisePropertyChanged(nameof(HasNoMappings));
+            }
+        }
+    }
+
+    public bool HasNoProfiles => Profiles.Count == 0;
+    public bool HasNoMappings => Mappings.Count == 0;
+    public string ProfileDirectory => _profileDirectory;
     public string DeviceSummary => Devices.Count == 0 ? "No panels detected" : $"{Devices.Count} panel(s) connected";
     public bool HasNoDevices => Devices.Count == 0;
+
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _profileCatalog.LoadDirectoryAsync(ProfileDirectory, cancellationToken)
+            .ConfigureAwait(false);
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            Profiles.Clear();
+            foreach (var profile in result.Profiles.Select(profile => new ProfileViewModel(profile)))
+            {
+                Profiles.Add(profile);
+            }
+
+            RaisePropertyChanged(nameof(HasNoProfiles));
+            SelectProfileForAircraft(_dcsBiosClient.Aircraft);
+        });
+
+        foreach (var error in result.Errors)
+        {
+            _activitySink.Publish(new ActivityEvent(
+                DateTimeOffset.Now,
+                ActivityCategory.Error,
+                "Profiles",
+                $"{Path.GetFileName(error.Path)}: {error.Message}"));
+        }
+    }
 
     public bool ShowHardware
     {
@@ -204,11 +261,48 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 ? Brush.Parse("#34D399")
                 : Brush.Parse("#F87171");
             DetectedAircraft = state.Aircraft ?? "-";
+            SelectProfileForAircraft(state.Aircraft);
             if (state.Aircraft is not null)
             {
                 _ = LoadMetadataAsync(state.Aircraft);
             }
         });
+    }
+
+    private void SelectProfileForAircraft(string? aircraft)
+    {
+        var selected = ProfileCatalog.SelectForAircraft(
+            Profiles.Select(profile => profile.Profile),
+            aircraft);
+        if (selected is null)
+        {
+            SelectedProfile = null;
+            ActiveProfile = "None";
+            Mappings.Clear();
+            RaisePropertyChanged(nameof(HasNoMappings));
+            return;
+        }
+
+        SelectedProfile = Profiles.First(profile => ReferenceEquals(profile.Profile, selected));
+    }
+
+    private void RefreshMappings(ProfileViewModel profile)
+    {
+        Mappings.Clear();
+        foreach (var device in profile.Profile.Devices)
+        {
+            foreach (var mapping in device.Mappings)
+            {
+                foreach (var action in mapping.Actions)
+                {
+                    Mappings.Add(new MappingViewModel(
+                        device.DeviceType,
+                        mapping.ControlId,
+                        mapping.Kind,
+                        action));
+                }
+            }
+        }
     }
 
     private void OnDcsBiosDataReceived(object? sender, DcsBiosDataReceived data)

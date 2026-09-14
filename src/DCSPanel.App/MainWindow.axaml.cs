@@ -30,6 +30,11 @@ public partial class MainWindow : Window
     protected override async void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            await viewModel.InitializeAsync();
+        }
+
         if (_hardwareService is not null)
         {
             await _hardwareService.StartAsync();

@@ -36,6 +36,7 @@ public partial class App : Application
             services.AddSingleton<IDcsBiosClient, UdpDcsBiosClient>();
             services.AddSingleton<ProfileValidator>();
             services.AddSingleton<JsonProfileRepository>();
+            services.AddSingleton<ProfileCatalog>();
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<MainWindow>();
 

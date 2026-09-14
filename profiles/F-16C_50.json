@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "f-16c-50",
+  "displayName": "F-16C Viper",
+  "aircraftModule": "F-16C_50",
+  "devices": [
+    {
+      "deviceType": "LogitechPz55",
+      "deviceId": null,
+      "switchSync": "NoSync",
+      "mappings": []
+    },
+    {
+      "deviceType": "LogitechPz70",
+      "deviceId": null,
+      "switchSync": "NoSync",
+      "mappings": []
+    }
+  ]
+}

@@ -13,6 +13,33 @@ project uses [Semantic Versioning](https://semver.org/).
 - controlled DCS-BIOS command transmission;
 - PZ55 LED and PZ70 LCD/LED output.
 
+## [0.3.0] - 2026-09-14
+
+Profile catalog and mapping browser milestone.
+
+### Added
+
+- automatic loading and validation of every JSON profile shipped with the application;
+- invalid profile reporting in structured logs and Live Monitor;
+- automatic profile selection from the aircraft reported by DCS-BIOS;
+- safe fallback to the Generic profile for unsupported or disconnected aircraft;
+- selectable profile catalog with aircraft, device, mapping, and synchronization details;
+- mapping browser showing physical input, input type, backend, command, and argument;
+- safe empty starter profiles for the F-16C Viper and F/A-18C Hornet;
+- profile catalog and aircraft selection tests.
+
+### Safety
+
+- all starter profiles use `NoSync`;
+- selecting or automatically changing a profile never transmits switch states;
+- starter aircraft profiles intentionally contain no commands until DCS-BIOS metadata
+  can be validated against a local installation.
+
+### Changed
+
+- replaced the Profiles and Mappings previews with live data-driven pages;
+- bumped the project version to `0.3.0`.
+
 ## [0.2.1] - 2026-09-14
 
 User interface refinement release.
