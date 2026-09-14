@@ -176,3 +176,7 @@ inutile.
 La version actuelle n'envoie aucune commande à DCS-BIOS et n'écrit aucune donnée dans
 les LED ou LCD. Charger un profil n'envoie pas automatiquement la position des switches
 physiques vers DCS.
+
+## Licence
+
+Ce projet est distribué sous licence [MIT](LICENSE).
