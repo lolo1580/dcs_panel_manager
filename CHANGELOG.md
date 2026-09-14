@@ -13,6 +13,29 @@ project uses [Semantic Versioning](https://semver.org/).
 - controlled DCS-BIOS command transmission;
 - PZ55 LED and PZ70 LCD/LED output.
 
+## [0.3.1] - 2026-09-14
+
+Complete DCS-BIOS aircraft profile discovery.
+
+### Added
+
+- automatic starter profile generation for every non-empty aircraft alias exposed by
+  the installed DCS-BIOS version;
+- live profile count sourced from the local DCS-BIOS metadata;
+- tests for aircraft alias discovery and generated profile safety.
+
+### Changed
+
+- explicit JSON profiles now override generated profiles for the same aircraft;
+- Profiles now lists airplanes, helicopters, community modules, and other aircraft
+  supported by the installed DCS-BIOS metadata;
+- bumped the project version to `0.3.1`.
+
+### Safety
+
+- every generated profile includes PZ55 and PZ70 with `NoSync` and no actions;
+- generating or selecting a profile does not send commands to DCS World.
+
 ## [0.3.0] - 2026-09-14
 
 Profile catalog and mapping browser milestone.

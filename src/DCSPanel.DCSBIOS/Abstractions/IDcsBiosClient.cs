@@ -36,6 +36,8 @@ public interface IDcsBiosMetadataProvider
 {
     string? MetadataDirectory { get; }
 
+    Task<IReadOnlyList<string>> GetAircraftAsync(CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<DcsBiosControlMetadata>> GetControlsAsync(
         string aircraft,
         CancellationToken cancellationToken = default);

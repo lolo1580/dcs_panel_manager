@@ -20,6 +20,31 @@ public sealed class JsonDcsBiosMetadataProvider : IDcsBiosMetadataProvider
 
     public string? MetadataDirectory { get; }
 
+    public async Task<IReadOnlyList<string>> GetAircraftAsync(CancellationToken cancellationToken = default)
+    {
+        if (MetadataDirectory is null)
+        {
+            return [];
+        }
+
+        var aliasesPath = Path.Combine(MetadataDirectory, AliasesFileName);
+        await using var aliasesStream = File.OpenRead(aliasesPath);
+        using var aliases = await JsonDocument.ParseAsync(aliasesStream, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+        if (aliases.RootElement.ValueKind != JsonValueKind.Object)
+        {
+            return [];
+        }
+
+        return aliases.RootElement.EnumerateObject()
+            .Select(property => property.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name) &&
+                           !name.Equals("NONE", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
     public async Task<IReadOnlyList<DcsBiosControlMetadata>> GetControlsAsync(
         string aircraft,
         CancellationToken cancellationToken = default)

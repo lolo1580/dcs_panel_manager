@@ -5,6 +5,20 @@ public sealed class JsonDcsBiosMetadataProviderTests : IDisposable
     private readonly string _directory = Path.Combine(Path.GetTempPath(), $"dcs-panel-tests-{Guid.NewGuid():N}");
 
     [Fact]
+    public async Task GetAircraftAsyncReturnsSortedNonEmptyAliases()
+    {
+        Directory.CreateDirectory(_directory);
+        await File.WriteAllTextAsync(
+            Path.Combine(_directory, "AircraftAliases.json"),
+            """{"UH-1H":["CommonData","UH-1H"],"":["MetadataStart"],"F-16C_50":["CommonData","F-16C_50"]}""");
+        var provider = new JsonDcsBiosMetadataProvider([_directory]);
+
+        var aircraft = await provider.GetAircraftAsync();
+
+        Assert.Equal(["F-16C_50", "UH-1H"], aircraft);
+    }
+
+    [Fact]
     public async Task GetControlsAsyncLoadsAllModulesDeclaredByAircraftAlias()
     {
         Directory.CreateDirectory(_directory);

@@ -146,12 +146,42 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         var result = await _profileCatalog.LoadDirectoryAsync(ProfileDirectory, cancellationToken)
             .ConfigureAwait(false);
+        IReadOnlyList<string> aircraft = [];
+        try
+        {
+            aircraft = await _metadataProvider.GetAircraftAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
+        {
+            _activitySink.Publish(new ActivityEvent(
+                DateTimeOffset.Now,
+                ActivityCategory.Error,
+                "DCS-BIOS metadata",
+                $"Unable to load aircraft aliases: {exception.Message}"));
+        }
+
+        var profiles = result.Profiles.ToList();
+        var definedAircraft = profiles
+            .Where(profile => !string.IsNullOrWhiteSpace(profile.AircraftModule))
+            .Select(profile => profile.AircraftModule!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        profiles.AddRange(aircraft
+            .Where(aircraftModule => !definedAircraft.Contains(aircraftModule))
+            .Select(StarterProfileFactory.Create));
+
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             Profiles.Clear();
-            foreach (var profile in result.Profiles.Select(profile => new ProfileViewModel(profile)))
+            foreach (var profile in profiles
+                         .OrderBy(profile => profile.DisplayName, StringComparer.OrdinalIgnoreCase)
+                         .Select(profile => new ProfileViewModel(profile)))
             {
                 Profiles.Add(profile);
+            }
+
+            if (aircraft.Count > 0)
+            {
+                MetadataStatus = $"{aircraft.Count} aircraft definitions available";
             }
 
             RaisePropertyChanged(nameof(HasNoProfiles));

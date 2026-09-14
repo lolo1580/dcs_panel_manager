@@ -256,7 +256,7 @@
                 <Border Background="#070C16">
                     <Grid Margin="34,30" RowDefinitions="Auto,*" RowSpacing="22">
                         <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Spacing="4"><TextBlock Text="Profiles" Classes="pageTitle" /><TextBlock Text="Aircraft-specific configurations with safe synchronization" Classes="muted" /></StackPanel>
+                            <StackPanel Spacing="4"><TextBlock Text="Profiles" Classes="pageTitle" /><TextBlock Text="{Binding Profiles.Count, StringFormat='Aircraft and helicopter profiles from DCS-BIOS · {0} available'}" Classes="muted" /></StackPanel>
                             <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center"><TextBlock Text="{Binding ProfileDirectory}" Classes="mono muted" FontSize="10" /></Border>
                         </Grid>
                         <Grid Grid.Row="1" ColumnDefinitions="1.2*,*" ColumnSpacing="14">

@@ -11,7 +11,7 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> Version 0.3 adds read-only DCS-BIOS monitoring, automatic profile selection, a mapping
+> Version 0.3.1 adds read-only DCS-BIOS monitoring, automatic profile selection, a mapping
 > browser, and a refined cockpit-inspired UI.
 > No commands are sent to DCS World or
 > to panel LED/LCD outputs yet.
@@ -36,7 +36,8 @@ with DCS World; this project does not reimplement DCS-BIOS.
 - active aircraft detection through the official `_ACFT_NAME` export;
 - automatic import of aircraft control metadata from DCS-BIOS JSON files;
 - DCS-BIOS packet count and sampled receive activity in Live Monitor.
-- validated JSON profile catalog with Generic, F-16C Viper, and F/A-18C Hornet starters;
+- validated JSON profile catalog plus automatically generated starters for every aircraft
+  and helicopter exposed by the installed DCS-BIOS metadata;
 - automatic aircraft profile selection with Generic fallback;
 - data-driven Profiles and Mappings pages.
 
@@ -103,7 +104,7 @@ dotnet build .\DCSPanelManager.sln -c Release
 dotnet test .\DCSPanelManager.sln -c Release --no-build
 ```
 
-Current reference status: **0 warnings, 0 errors, 16 passing tests**.
+Current reference status: **0 warnings, 0 errors, 18 passing tests**.
 
 ## Run the application
 
