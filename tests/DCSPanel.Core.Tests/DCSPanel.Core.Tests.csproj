@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\DCSPanel.Core\DCSPanel.Core.csproj" />
     <ProjectReference Include="..\..\src\DCSPanel.Profiles\DCSPanel.Profiles.csproj" />
+    <ProjectReference Include="..\..\src\DCSPanel.App\DCSPanel.App.csproj" />
   </ItemGroup>
 
 </Project>

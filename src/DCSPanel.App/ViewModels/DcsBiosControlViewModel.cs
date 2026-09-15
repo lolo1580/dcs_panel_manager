@@ -58,7 +58,7 @@ public sealed class DcsBiosControlViewModel
                 var step = interfaces.First(input => input.Interface.Equals("variable_step", StringComparison.OrdinalIgnoreCase))
                     .SuggestedStep ?? 1;
                 return trigger.Kind == PhysicalInputKind.EncoderClockwise
-                    ? step.ToString(CultureInfo.InvariantCulture)
+                    ? "+" + step.ToString(CultureInfo.InvariantCulture)
                     : (-step).ToString(CultureInfo.InvariantCulture);
             }
 

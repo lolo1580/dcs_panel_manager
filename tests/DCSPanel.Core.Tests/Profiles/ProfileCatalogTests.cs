@@ -41,6 +41,26 @@ public sealed class ProfileCatalogTests : IDisposable
         Assert.Same(generic, ProfileCatalog.SelectForAircraft([generic, f16], "FA-18C_hornet"));
     }
 
+    [Theory]
+    [InlineData("null")]
+    [InlineData("[null]")]
+    [InlineData("[{\"deviceType\":\"LogitechPz55\",\"mappings\":null}]")]
+    [InlineData("[{\"deviceType\":\"LogitechPz55\",\"mappings\":[null]}]")]
+    [InlineData("[{\"deviceType\":\"LogitechPz55\",\"mappings\":[{\"controlId\":\"BAT\",\"actions\":null}]}]")]
+    [InlineData("[{\"deviceType\":\"LogitechPz55\",\"mappings\":[{\"controlId\":\"BAT\",\"actions\":[null]}]}]")]
+    public async Task LoadDirectoryAsyncReportsIncompleteProfilesWithoutCrashing(string devices)
+    {
+        Directory.CreateDirectory(_directory);
+        await File.WriteAllTextAsync(Path.Combine(_directory, "incomplete.json"),
+            "{\"schemaVersion\":1,\"id\":\"test\",\"displayName\":\"Test\",\"devices\":" + devices + "}");
+        var catalog = new ProfileCatalog(new JsonProfileRepository(new ProfileValidator()));
+
+        var result = await catalog.LoadDirectoryAsync(_directory);
+
+        Assert.Empty(result.Profiles);
+        Assert.Single(result.Errors);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory))

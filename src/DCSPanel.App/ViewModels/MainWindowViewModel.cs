@@ -27,6 +27,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly List<ActivityEventViewModel> _allActivities = [];
     private readonly List<DcsBiosControlViewModel> _allControls = [];
     private CancellationTokenSource? _metadataLoadCancellation;
+    private bool _isSavingProfile;
     private string _dcsWorldStatus = "Disconnected";
     private string _dcsBiosStatus = "Disconnected";
     private IBrush _dcsWorldStatusBrush = Brush.Parse("#F87171");
@@ -80,7 +81,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         LearnInputCommand = new RelayCommand(StartLearningInput);
         AddMappingCommand = new AsyncRelayCommand(AddMappingAsync, CanAddMapping);
         TestMappingCommand = new RelayCommand(TestMapping, CanAddMapping);
-        RemoveMappingCommand = new AsyncRelayCommand(RemoveSelectedMappingAsync, () => SelectedMapping is not null);
+        RemoveMappingCommand = new AsyncRelayCommand(RemoveSelectedMappingAsync, () => !_isSavingProfile && SelectedMapping is not null);
     }
 
     public ObservableCollection<DeviceViewModel> Devices { get; } = [];
@@ -453,6 +454,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             _metadataLoadCancellation?.Cancel();
             _metadataLoadCancellation?.Dispose();
             _metadataLoadCancellation = null;
+            _allControls.Clear();
+            RefreshControlFilter();
+            WritableControls.Clear();
+            SelectedCommandControl = null;
+            RefreshEditorCommands();
             if (state.Aircraft is not null)
             {
                 _metadataLoadCancellation = new CancellationTokenSource();
@@ -548,7 +554,14 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 ActivityCategory.Error,
                 "DCS-BIOS metadata",
                 exception.Message));
-            Dispatcher.UIThread.Post(() => MetadataStatus = "Metadata loading failed");
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (!cancellationToken.IsCancellationRequested &&
+                    string.Equals(_dcsBiosClient.Aircraft, aircraft, StringComparison.Ordinal))
+                {
+                    MetadataStatus = "Metadata loading failed";
+                }
+            });
         }
     }
 
@@ -627,7 +640,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     }
 
     private bool CanAddMapping() =>
-        TryCreateDraftMapping(out _, updateStatus: false);
+        !_isSavingProfile && TryCreateDraftMapping(out _, updateStatus: false);
 
     private bool TryCreateDraftMapping(out InputMapping? mapping, bool updateStatus)
     {
@@ -652,7 +665,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             return false;
         }
 
-        if (SelectedCommandControl is null)
+        if (SelectedCommandControl is null ||
+            !_allControls.Contains(SelectedCommandControl) ||
+            !string.Equals(ControlCatalogAircraft, _dcsBiosClient.Aircraft, StringComparison.Ordinal))
         {
             if (updateStatus)
             {
@@ -687,13 +702,14 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        var updated = ProfileMappingEditor.Upsert(SelectedProfile.Profile, mapping);
+        var original = SelectedProfile;
+        var updated = ProfileMappingEditor.Upsert(original.Profile, mapping);
         if (!await TrySaveProfileAsync(updated).ConfigureAwait(true))
         {
             return;
         }
 
-        ApplyUpdatedProfile(updated);
+        ApplyUpdatedProfile(original, updated);
         EditorStatus = $"Saved {mapping.ControlId} → {mapping.Actions[0].Command}";
         _activitySink.Publish(new ActivityEvent(
             DateTimeOffset.Now,
@@ -725,19 +741,22 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        var original = SelectedProfile;
         var removed = SelectedMapping.Mapping;
-        var updated = ProfileMappingEditor.Remove(SelectedProfile.Profile, removed);
+        var updated = ProfileMappingEditor.Remove(original.Profile, removed);
         if (!await TrySaveProfileAsync(updated).ConfigureAwait(true))
         {
             return;
         }
 
-        ApplyUpdatedProfile(updated);
+        ApplyUpdatedProfile(original, updated);
         EditorStatus = $"Removed mapping for {removed.ControlId}";
     }
 
     private async Task<bool> TrySaveProfileAsync(AircraftProfile profile)
     {
+        _isSavingProfile = true;
+        RefreshEditorCommands();
         try
         {
             var path = Path.Combine(ProfileDirectory, ProfileMappingEditor.GetFileName(profile));
@@ -754,14 +773,28 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 exception.Message));
             return false;
         }
+        finally
+        {
+            _isSavingProfile = false;
+            RefreshEditorCommands();
+        }
     }
 
-    private void ApplyUpdatedProfile(AircraftProfile profile)
+    private void ApplyUpdatedProfile(ProfileViewModel original, AircraftProfile profile)
     {
-        var index = Profiles.IndexOf(SelectedProfile!);
+        var index = Profiles.IndexOf(original);
+        if (index < 0)
+        {
+            return;
+        }
+
+        var wasSelected = ReferenceEquals(SelectedProfile, original);
         var updated = new ProfileViewModel(profile);
         Profiles[index] = updated;
-        SelectedProfile = updated;
+        if (wasSelected)
+        {
+            SelectedProfile = updated;
+        }
     }
 
     private void RefreshEditorCommands()

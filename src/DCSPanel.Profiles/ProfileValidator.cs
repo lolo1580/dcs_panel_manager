@@ -40,21 +40,43 @@ public sealed class ProfileValidator
             errors.Add("The profile display name is required.");
         }
 
+        if (profile.Devices is null)
+        {
+            errors.Add("The device list is required.");
+            return new ProfileValidationResult(false, errors);
+        }
+
         foreach (var device in profile.Devices)
         {
+            if (device is null)
+            {
+                errors.Add("Device entries must not be null.");
+                continue;
+            }
             if (string.IsNullOrWhiteSpace(device.DeviceType))
             {
                 errors.Add("Every device must declare a type.");
             }
 
+            if (device.Mappings is null)
+            {
+                errors.Add("The mapping list is required.");
+                continue;
+            }
+
             foreach (var mapping in device.Mappings)
             {
+                if (mapping is null)
+                {
+                    errors.Add("Mapping entries must not be null.");
+                    continue;
+                }
                 if (string.IsNullOrWhiteSpace(mapping.ControlId))
                 {
                     errors.Add("Every mapping must target a physical control.");
                 }
 
-                if (mapping.Actions.Count == 0)
+                if (mapping.Actions is null || mapping.Actions.Count == 0 || mapping.Actions.Any(action => action is null))
                 {
                     errors.Add($"Mapping {mapping.ControlId} does not contain any actions.");
                 }

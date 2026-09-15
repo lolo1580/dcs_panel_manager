@@ -12,6 +12,24 @@ project uses [Semantic Versioning](https://semver.org/).
 - controlled DCS-BIOS command transmission;
 - PZ55 LED and PZ70 LCD/LED output.
 
+## [0.5.1] - 2026-09-15
+
+### Fixed
+
+- saving a mapping updates its original profile even when the selection changes
+  during the write; add and remove operations cannot overlap;
+- changing aircraft immediately clears the previous control catalog and command
+  selection; stale commands and obsolete metadata errors are rejected;
+- clockwise variable-step suggestions include an explicit plus sign, so DCS-BIOS
+  interprets them as relative increments rather than absolute positions;
+- incomplete profile collections and null entries are reported as invalid profiles
+  instead of crashing startup.
+
+### Added
+
+- regression coverage for selection changes during save completion, pending aircraft
+  metadata, signed encoder arguments, and malformed profile structures.
+
 ## [0.5.0] - 2026-09-15
 
 Interactive profile mapping editor milestone.

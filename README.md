@@ -11,7 +11,7 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> Version 0.5.0 adds read-only DCS-BIOS monitoring, automatic profile selection, a
+> Version 0.5.1 includes read-only DCS-BIOS monitoring, automatic profile selection, a
 > searchable aircraft control catalog, and an interactive profile mapping editor.
 > No commands are sent to DCS World or
 > to panel LED/LCD outputs yet.
@@ -110,7 +110,7 @@ dotnet build .\DCSPanelManager.sln -c Release
 dotnet test .\DCSPanelManager.sln -c Release --no-build
 ```
 
-Current reference status: **0 warnings, 0 errors, 24 passing tests**.
+Current reference status: **0 warnings, 0 errors, 33 passing tests**.
 
 ## Run the application
 
