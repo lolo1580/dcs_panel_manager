@@ -11,10 +11,9 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> Version 0.5.1 includes read-only DCS-BIOS monitoring, automatic profile selection, a
-> searchable aircraft control catalog, and an interactive profile mapping editor.
-> No commands are sent to DCS World or
-> to panel LED/LCD outputs yet.
+> Version 0.6.0 adds tested PZ55 gear LEDs and PZ70 LCD/autopilot LED output, alongside
+> read-only DCS-BIOS monitoring, profiles, and the interactive mapping editor. No
+> commands are sent to DCS World.
 
 ## Current features
 
@@ -44,6 +43,9 @@ with DCS World; this project does not reimplement DCS-BIOS.
   preview, automatic saving, and mapping removal;
 - separate On/Off and Pressed/Released triggers with DCS-BIOS argument suggestions;
 - data-driven Profiles and Mappings pages.
+- PZ55 green, red, yellow, and off landing-gear LED states;
+- PZ70 upper/lower numeric LCD rendering and all autopilot LEDs;
+- hardware-only output test buttons on the Devices page.
 
 ## Hardware validation
 
@@ -51,8 +53,8 @@ HID input has been tested with real hardware on Windows:
 
 | Panel | USB identifier | Status |
 |---|---|---|
-| PZ55 Switch Panel | `VID 06A3 / PID 0D67` | Detection, reports, and switches validated |
-| PZ70 Multi Panel | `VID 06A3 / PID 0D06` | Detection, reports, and controls validated |
+| PZ55 Switch Panel | `VID 06A3 / PID 0D67` | Detection, inputs, and gear LED output validated |
+| PZ70 Multi Panel | `VID 06A3 / PID 0D06` | Detection, inputs, LCD, and autopilot LED output validated |
 
 Testing confirmed PZ55 state changes and PZ70 selector positions. Streams remain open
 while panels are idle and close cleanly when the application stops.
@@ -110,7 +112,7 @@ dotnet build .\DCSPanelManager.sln -c Release
 dotnet test .\DCSPanelManager.sln -c Release --no-build
 ```
 
-Current reference status: **0 warnings, 0 errors, 33 passing tests**.
+Current reference status: **0 warnings, 0 errors, 36 passing tests**.
 
 ## Run the application
 

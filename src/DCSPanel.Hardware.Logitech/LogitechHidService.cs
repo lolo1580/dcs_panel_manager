@@ -68,6 +68,27 @@ public sealed partial class LogitechHidService(
         await StopAsync().ConfigureAwait(false);
     }
 
+    public async Task SetOutputAsync(DeviceId deviceId, Output output, CancellationToken cancellationToken = default)
+    {
+        var connected = _connected.Values.FirstOrDefault(device => device.Descriptor.Id == deviceId);
+        if (connected is null)
+        {
+            throw new InvalidOperationException("The selected panel is no longer connected.");
+        }
+
+        var reports = LogitechOutputEncoder.Encode(connected.Descriptor.Type, output);
+        foreach (var report in reports)
+        {
+            await connected.SetFeatureAsync(report, cancellationToken).ConfigureAwait(false);
+        }
+
+        activitySink.Publish(new ActivityEvent(
+            DateTimeOffset.Now,
+            ActivityCategory.Hardware,
+            connected.Descriptor.Type.ToString(),
+            $"TX {output.Id}"));
+    }
+
     private async Task MonitorAsync(CancellationToken cancellationToken)
     {
         activitySink.Publish(new ActivityEvent(DateTimeOffset.Now, ActivityCategory.Hardware, "HID", "Panel monitoring started"));
@@ -282,6 +303,7 @@ public sealed partial class LogitechHidService(
     private sealed class ConnectedDevice(DeviceDescriptor descriptor, CancellationToken parentToken) : IAsyncDisposable
     {
         private readonly CancellationTokenSource _cancellation = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
+        private readonly SemaphoreSlim _writeLock = new(1, 1);
 
         public DeviceDescriptor Descriptor { get; } = descriptor;
         public CancellationToken Token => _cancellation.Token;
@@ -289,6 +311,24 @@ public sealed partial class LogitechHidService(
         public Task? ReaderTask { get; set; }
 
         public void Cancel() => _cancellation.Cancel();
+
+        public async Task SetFeatureAsync(byte[] report, CancellationToken cancellationToken)
+        {
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (Stream is null)
+                {
+                    throw new InvalidOperationException("The panel is still opening. Try again in a moment.");
+                }
+
+                Stream.SetFeature(report);
+            }
+            finally
+            {
+                _writeLock.Release();
+            }
+        }
 
         public async ValueTask DisposeAsync()
         {
@@ -306,6 +346,7 @@ public sealed partial class LogitechHidService(
             }
 
             _cancellation.Dispose();
+            _writeLock.Dispose();
         }
     }
 }

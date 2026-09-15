@@ -398,12 +398,48 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
             if (hardwareEvent.Kind == HardwareEventKind.Connected)
             {
-                Devices.Add(new DeviceViewModel(hardwareEvent.Device));
+                Devices.Add(new DeviceViewModel(
+                    hardwareEvent.Device,
+                    () => TestPanelOutputAsync(hardwareEvent.Device)));
             }
 
             RaisePropertyChanged(nameof(DeviceSummary));
             RaisePropertyChanged(nameof(HasNoDevices));
         });
+    }
+
+    private async Task TestPanelOutputAsync(DeviceDescriptor device)
+    {
+        try
+        {
+            var output = device.Type switch
+            {
+                DeviceType.LogitechPz55 => new Output(
+                    PanelOutputIds.Pz55GearLights,
+                    new Pz55GearLights(Pz55GearLightColor.Green, Pz55GearLightColor.Yellow, Pz55GearLightColor.Red)),
+                DeviceType.LogitechPz70 => new Output(
+                    PanelOutputIds.Pz70Panel,
+                    new Pz70PanelOutput(12345, -6789, Pz70AutopilotLights.All)),
+                _ => throw new InvalidOperationException("This panel has no supported output test.")
+            };
+
+            await _hardwareService.SetOutputAsync(device.Id, output).ConfigureAwait(false);
+            _activitySink.Publish(new ActivityEvent(
+                DateTimeOffset.Now,
+                ActivityCategory.Hardware,
+                device.Type.ToString(),
+                device.Type == DeviceType.LogitechPz55
+                    ? "PZ55 gear LED test sent"
+                    : "PZ70 display and LED test sent"));
+        }
+        catch (Exception exception)
+        {
+            _activitySink.Publish(new ActivityEvent(
+                DateTimeOffset.Now,
+                ActivityCategory.Error,
+                device.Type.ToString(),
+                $"Output test failed: {exception.Message}"));
+        }
     }
 
     private void OnActivityPublished(object? sender, ActivityEvent activity)

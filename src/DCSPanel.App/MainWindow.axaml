@@ -220,7 +220,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:DeviceViewModel">
                                         <Border Classes="card" Margin="0,0,0,12">
-                                            <Grid ColumnDefinitions="54,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="8">
+                                            <Grid ColumnDefinitions="54,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="8">
                                                 <Border Grid.RowSpan="3" Width="46" Height="46" CornerRadius="12" Background="#17334E" VerticalAlignment="Top">
                                                     <TextBlock Text="P" Foreground="#7DD3FC" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                 </Border>
@@ -239,6 +239,10 @@
                                                 <Border Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Classes="subtleCard" Padding="11,8">
                                                     <TextBlock Text="{Binding InstancePath}" Classes="muted mono" FontSize="10" TextWrapping="Wrap" />
                                                 </Border>
+                                                <StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="10" IsVisible="{Binding SupportsOutputTest}">
+                                                    <Button Content="{Binding OutputTestLabel}" Command="{Binding TestOutputCommand}" />
+                                                    <TextBlock Text="Sends a visible hardware-only test; no command is sent to DCS World." Classes="muted" FontSize="11" VerticalAlignment="Center" />
+                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

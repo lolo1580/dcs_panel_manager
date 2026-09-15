@@ -10,7 +10,25 @@ project uses [Semantic Versioning](https://semver.org/).
 ### Planned
 
 - controlled DCS-BIOS command transmission;
-- PZ55 LED and PZ70 LCD/LED output.
+- configurable DCS-BIOS-to-panel output bindings.
+
+## [0.6.0] - 2026-09-15
+
+### Added
+
+- hardware output support for the PZ55 landing-gear LEDs, including green, red,
+  yellow, and off states for each of the three indicators;
+- hardware output support for the PZ70 upper and lower LCDs plus all eight
+  autopilot LEDs;
+- per-device output test actions in the Devices page. Tests are hardware-only and
+  never send a command to DCS World;
+- protocol-level tests covering the PZ55 feature reports and PZ70 display range,
+  sign, and LED encoding.
+
+### Safety
+
+- output reports are serialized per HID device and rejected cleanly when a panel is
+  disconnected or still opening.
 
 ## [0.5.1] - 2026-09-15
 

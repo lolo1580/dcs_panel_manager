@@ -11,4 +11,6 @@ public interface IHardwareService : IAsyncDisposable
     Task StartAsync(CancellationToken cancellationToken = default);
 
     Task StopAsync(CancellationToken cancellationToken = default);
+
+    Task SetOutputAsync(DeviceId deviceId, Output output, CancellationToken cancellationToken = default);
 }

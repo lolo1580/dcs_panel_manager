@@ -88,6 +88,7 @@ public sealed class EditorRegressionTests
         public IReadOnlyList<DeviceDescriptor> Devices => [];
         public Task StartAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task StopAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task SetOutputAsync(DeviceId deviceId, Output output, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }
