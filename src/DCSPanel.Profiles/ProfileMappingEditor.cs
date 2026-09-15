@@ -5,6 +5,7 @@ namespace DCSPanel.Profiles;
 
 public static class ProfileMappingEditor
 {
+    private const string CrossPlatformInvalidFileNameCharacters = "<>:\"/\\|?*";
     public static AircraftProfile Upsert(AircraftProfile profile, InputMapping mapping)
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -55,9 +56,8 @@ public static class ProfileMappingEditor
     {
         ArgumentNullException.ThrowIfNull(profile);
         var source = profile.AircraftModule ?? profile.Id;
-        var invalidCharacters = Path.GetInvalidFileNameChars().ToHashSet();
         var safeName = new string(source
-            .Select(character => invalidCharacters.Contains(character) ? '_' : character)
+            .Select(character => char.IsControl(character) || CrossPlatformInvalidFileNameCharacters.Contains(character) ? '_' : character)
             .ToArray());
         return $"{safeName}.json";
     }
