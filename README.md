@@ -11,8 +11,8 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> Version 0.4.0 adds read-only DCS-BIOS monitoring, automatic profile selection, a
-> searchable aircraft control catalog, and a refined cockpit-inspired UI.
+> Version 0.5.0 adds read-only DCS-BIOS monitoring, automatic profile selection, a
+> searchable aircraft control catalog, and an interactive profile mapping editor.
 > No commands are sent to DCS World or
 > to panel LED/LCD outputs yet.
 
@@ -40,6 +40,9 @@ with DCS World; this project does not reimplement DCS-BIOS.
   and helicopter exposed by the installed DCS-BIOS metadata;
 - automatic aircraft profile selection with Generic fallback;
 - searchable DCS-BIOS control catalog for the aircraft detected in the active mission;
+- interactive mapping editor with physical input learning, command search, safe
+  preview, automatic saving, and mapping removal;
+- separate On/Off and Pressed/Released triggers with DCS-BIOS argument suggestions;
 - data-driven Profiles and Mappings pages.
 
 ## Hardware validation
@@ -66,7 +69,8 @@ The application currently contains these pages:
 - **DCS-BIOS**: connection status and a searchable catalog of the active aircraft's
   identifiers, command interfaces, outputs, and descriptions;
 - **Profiles**: selectable catalog with aircraft, device, mapping, and safety details;
-- **Mappings**: active-profile mapping browser;
+- **Mappings**: learn a physical panel input, select a writable DCS-BIOS command,
+  preview it safely, and save or remove mappings from the active aircraft profile;
 - **Settings**: current safe configuration and upcoming preferences.
 
 ## Requirements
@@ -106,7 +110,7 @@ dotnet build .\DCSPanelManager.sln -c Release
 dotnet test .\DCSPanelManager.sln -c Release --no-build
 ```
 
-Current reference status: **0 warnings, 0 errors, 19 passing tests**.
+Current reference status: **0 warnings, 0 errors, 24 passing tests**.
 
 ## Run the application
 

@@ -148,7 +148,8 @@ public sealed class JsonDcsBiosMetadataProvider : IDcsBiosMetadataProvider
                 inputs.Add(new DcsBiosInputMetadata(
                     GetString(input, "interface") ?? "unknown",
                     GetInt32(input, "max_value"),
-                    GetString(input, "description")));
+                    GetString(input, "description"),
+                    GetInt32(input, "suggested_step")));
             }
         }
 

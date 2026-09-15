@@ -36,7 +36,22 @@ public sealed class JsonProfileRepository(ProfileValidator validator)
 
         var directory = Path.GetDirectoryName(Path.GetFullPath(path));
         Directory.CreateDirectory(directory!);
-        await using var stream = File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, profile, JsonOptions, cancellationToken).ConfigureAwait(false);
+        var temporaryPath = Path.Combine(directory!, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            await using (var stream = File.Create(temporaryPath))
+            {
+                await JsonSerializer.SerializeAsync(stream, profile, JsonOptions, cancellationToken).ConfigureAwait(false);
+            }
+
+            File.Move(temporaryPath, path, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
     }
 }

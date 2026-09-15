@@ -9,9 +9,36 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ### Planned
 
-- profile and mapping editor;
 - controlled DCS-BIOS command transmission;
 - PZ55 LED and PZ70 LCD/LED output.
+
+## [0.5.0] - 2026-09-15
+
+Interactive profile mapping editor milestone.
+
+### Added
+
+- Learn input mode that captures the next active PZ55 or PZ70 control;
+- searchable selection of writable DCS-BIOS commands for the active aircraft;
+- explicit On, Off, Pressed, Released, Clockwise, and Counter-clockwise triggers;
+- automatic argument suggestions for `set_state`, `action`, `fixed_step`, and
+  `variable_step` interfaces;
+- safe mapping preview in Live Monitor without command transmission;
+- mapping creation, replacement, and removal from the application;
+- automatic JSON profile persistence with atomic file replacement;
+- active/inactive switch-state matching in the mapping engine;
+- tests for switch state matching, profile editing, safe filenames, metadata steps,
+  and profile persistence.
+
+### Safety
+
+- mapping tests are previews only and never transmit commands to DCS World;
+- every edited profile retains the `NoSync` strategy;
+- incomplete or invalid DCS-BIOS arguments cannot be saved.
+
+### Changed
+
+- bumped the project version to `0.5.0`.
 
 ## [0.4.0] - 2026-09-15
 

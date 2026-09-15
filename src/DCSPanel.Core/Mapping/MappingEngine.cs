@@ -42,5 +42,6 @@ public sealed class MappingEngine(
     private static bool Matches(InputMapping mapping, PhysicalInput input) =>
         string.Equals(mapping.DeviceType, input.DeviceType, StringComparison.OrdinalIgnoreCase) &&
         string.Equals(mapping.ControlId, input.ControlId, StringComparison.OrdinalIgnoreCase) &&
-        mapping.Kind == input.Kind;
+        mapping.Kind == input.Kind &&
+        (mapping.IsActive is null || mapping.IsActive == input.IsActive);
 }

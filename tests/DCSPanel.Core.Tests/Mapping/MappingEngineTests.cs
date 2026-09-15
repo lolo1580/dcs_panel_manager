@@ -27,6 +27,27 @@ public sealed class MappingEngineTests
         Assert.Equal("BATT", action.Argument);
     }
 
+    [Fact]
+    public async Task ProcessAsyncDistinguishesActiveAndInactiveSwitchMappings()
+    {
+        var executor = new RecordingExecutor("DCS-BIOS");
+        var engine = new MappingEngine([executor], new ActivityHub());
+        var mappings = new[]
+        {
+            new InputMapping("LogitechPz55", "MASTER_BAT", PhysicalInputKind.Switch,
+                [new ActionDefinition("DCS-BIOS", "MAIN_PWR_SW", "1")], true),
+            new InputMapping("LogitechPz55", "MASTER_BAT", PhysicalInputKind.Switch,
+                [new ActionDefinition("DCS-BIOS", "MAIN_PWR_SW", "0")], false)
+        };
+
+        await engine.ProcessAsync(
+            new PhysicalInput("LogitechPz55", "MASTER_BAT", PhysicalInputKind.Switch, false),
+            mappings);
+
+        var action = Assert.Single(executor.Actions);
+        Assert.Equal("0", action.Argument);
+    }
+
     private sealed class RecordingExecutor(string backend) : IActionExecutor
     {
         public string Backend { get; } = backend;

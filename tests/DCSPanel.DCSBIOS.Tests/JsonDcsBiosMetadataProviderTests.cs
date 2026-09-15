@@ -49,7 +49,7 @@ public sealed class JsonDcsBiosMetadataProviderTests : IDisposable
                   "identifier": "MAIN_PWR_SW",
                   "description": "Main power switch",
                   "control_type": "selector",
-                  "inputs": [{"interface":"set_state","max_value":2}],
+                  "inputs": [{"interface":"set_state","max_value":2},{"interface":"variable_step","max_value":2,"suggested_step":1}],
                   "outputs": [{"type":"integer","address":4096,"mask":3,"shift_by":0,"max_value":2}]
                 }
               }
@@ -61,7 +61,8 @@ public sealed class JsonDcsBiosMetadataProviderTests : IDisposable
 
         Assert.Equal(2, controls.Count);
         var mainPower = Assert.Single(controls, control => control.Identifier == "MAIN_PWR_SW");
-        Assert.Equal("set_state", Assert.Single(mainPower.Inputs).Interface);
+        Assert.Contains(mainPower.Inputs, input => input.Interface == "set_state");
+        Assert.Equal(1, mainPower.Inputs.Single(input => input.Interface == "variable_step").SuggestedStep);
         Assert.Equal((ushort)0x1000, Assert.Single(mainPower.Outputs).Address);
     }
 

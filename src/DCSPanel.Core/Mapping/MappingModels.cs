@@ -24,7 +24,8 @@ public sealed record InputMapping(
     string DeviceType,
     string ControlId,
     PhysicalInputKind Kind,
-    IReadOnlyList<ActionDefinition> Actions);
+    IReadOnlyList<ActionDefinition> Actions,
+    bool? IsActive = null);
 
 public interface IActionExecutor
 {

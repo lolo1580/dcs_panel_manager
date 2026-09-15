@@ -54,7 +54,8 @@ public sealed record DcsBiosControlMetadata(
 public sealed record DcsBiosInputMetadata(
     string Interface,
     int? MaxValue,
-    string? Description);
+    string? Description,
+    int? SuggestedStep = null);
 
 public sealed record DcsBiosOutputMetadata(
     string Type,

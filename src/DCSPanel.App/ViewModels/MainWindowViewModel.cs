@@ -2,12 +2,14 @@ using System.Collections.ObjectModel;
 using Avalonia.Media;
 using Avalonia.Threading;
 using DCSPanel.Core.Events;
+using DCSPanel.Core.Mapping;
 using DCSPanel.Core.State;
 using DCSPanel.DCSBIOS;
 using DCSPanel.DCSBIOS.Abstractions;
 using DCSPanel.Hardware.Abstractions;
 using DCSPanel.Hardware.Models;
 using DCSPanel.Profiles;
+using DCSPanel.Profiles.Models;
 
 namespace DCSPanel.App.ViewModels;
 
@@ -19,6 +21,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly IDcsBiosClient _dcsBiosClient;
     private readonly IDcsBiosMetadataProvider _metadataProvider;
     private readonly ProfileCatalog _profileCatalog;
+    private readonly JsonProfileRepository _profileRepository;
     private readonly string _dcsBiosEndpoint;
     private readonly string _profileDirectory;
     private readonly List<ActivityEventViewModel> _allActivities = [];
@@ -35,6 +38,15 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private string _activeProfile = "Loading...";
     private string _controlCatalogAircraft = "No aircraft detected";
     private string _controlSearchText = string.Empty;
+    private string _learnedDeviceType = "No input learned";
+    private string _learnedControlId = "Press Learn input, then operate a panel control";
+    private string _mappingArgument = string.Empty;
+    private string _mappingCommandSearchText = string.Empty;
+    private string _editorStatus = "Ready to create a safe mapping";
+    private bool _isLearningInput;
+    private DcsBiosControlViewModel? _selectedCommandControl;
+    private MappingTriggerOption? _selectedTriggerOption;
+    private MappingViewModel? _selectedMapping;
     private ProfileViewModel? _selectedProfile;
     private bool _showHardware = true;
     private bool _showMapping = true;
@@ -47,13 +59,15 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         IDcsBiosClient dcsBiosClient,
         IDcsBiosMetadataProvider metadataProvider,
         DcsBiosOptions dcsBiosOptions,
-        ProfileCatalog profileCatalog)
+        ProfileCatalog profileCatalog,
+        JsonProfileRepository profileRepository)
     {
         _hardwareService = hardwareService;
         _activitySink = activitySink;
         _dcsBiosClient = dcsBiosClient;
         _metadataProvider = metadataProvider;
         _profileCatalog = profileCatalog;
+        _profileRepository = profileRepository;
         _dcsBiosEndpoint = $"{dcsBiosOptions.MulticastAddress}:{dcsBiosOptions.ReceivePort}";
         _profileDirectory = Path.Combine(AppContext.BaseDirectory, "profiles");
         _metadataStatus = metadataProvider.MetadataDirectory is null
@@ -63,6 +77,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _activitySink.ActivityPublished += OnActivityPublished;
         _dcsBiosClient.StateChanged += OnDcsBiosStateChanged;
         _dcsBiosClient.DataReceived += OnDcsBiosDataReceived;
+        LearnInputCommand = new RelayCommand(StartLearningInput);
+        AddMappingCommand = new AsyncRelayCommand(AddMappingAsync, CanAddMapping);
+        TestMappingCommand = new RelayCommand(TestMapping, CanAddMapping);
+        RemoveMappingCommand = new AsyncRelayCommand(RemoveSelectedMappingAsync, () => SelectedMapping is not null);
     }
 
     public ObservableCollection<DeviceViewModel> Devices { get; } = [];
@@ -70,6 +88,13 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ObservableCollection<ProfileViewModel> Profiles { get; } = [];
     public ObservableCollection<MappingViewModel> Mappings { get; } = [];
     public ObservableCollection<DcsBiosControlViewModel> Controls { get; } = [];
+    public ObservableCollection<DcsBiosControlViewModel> WritableControls { get; } = [];
+    public ObservableCollection<MappingTriggerOption> TriggerOptions { get; } = [];
+
+    public RelayCommand LearnInputCommand { get; }
+    public AsyncRelayCommand AddMappingCommand { get; }
+    public RelayCommand TestMappingCommand { get; }
+    public AsyncRelayCommand RemoveMappingCommand { get; }
 
     public string DcsWorldStatus
     {
@@ -142,6 +167,99 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public string ControlCountSummary => _allControls.Count == Controls.Count
         ? $"{Controls.Count} controls"
         : $"{Controls.Count} of {_allControls.Count} controls";
+    public string LearnedDeviceType
+    {
+        get => _learnedDeviceType;
+        private set => SetProperty(ref _learnedDeviceType, value);
+    }
+
+    public string LearnedControlId
+    {
+        get => _learnedControlId;
+        private set => SetProperty(ref _learnedControlId, value);
+    }
+
+    public string LearnInputLabel => IsLearningInput ? "Waiting for panel input..." : "Learn input";
+
+    public bool IsLearningInput
+    {
+        get => _isLearningInput;
+        private set
+        {
+            if (SetProperty(ref _isLearningInput, value))
+            {
+                RaisePropertyChanged(nameof(LearnInputLabel));
+            }
+        }
+    }
+
+    public DcsBiosControlViewModel? SelectedCommandControl
+    {
+        get => _selectedCommandControl;
+        set
+        {
+            if (SetProperty(ref _selectedCommandControl, value))
+            {
+                SuggestMappingArgument();
+                RefreshEditorCommands();
+            }
+        }
+    }
+
+    public MappingTriggerOption? SelectedTriggerOption
+    {
+        get => _selectedTriggerOption;
+        set
+        {
+            if (SetProperty(ref _selectedTriggerOption, value))
+            {
+                SuggestMappingArgument();
+                RefreshEditorCommands();
+            }
+        }
+    }
+
+    public string MappingArgument
+    {
+        get => _mappingArgument;
+        set
+        {
+            if (SetProperty(ref _mappingArgument, value))
+            {
+                RefreshEditorCommands();
+            }
+        }
+    }
+
+    public string MappingCommandSearchText
+    {
+        get => _mappingCommandSearchText;
+        set
+        {
+            if (SetProperty(ref _mappingCommandSearchText, value))
+            {
+                RefreshWritableControlFilter();
+            }
+        }
+    }
+
+    public string EditorStatus
+    {
+        get => _editorStatus;
+        private set => SetProperty(ref _editorStatus, value);
+    }
+
+    public MappingViewModel? SelectedMapping
+    {
+        get => _selectedMapping;
+        set
+        {
+            if (SetProperty(ref _selectedMapping, value))
+            {
+                RemoveMappingCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
     public string ActiveProfile
     {
         get => _activeProfile;
@@ -153,12 +271,19 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         get => _selectedProfile;
         set
         {
-            if (SetProperty(ref _selectedProfile, value) && value is not null)
+            if (!SetProperty(ref _selectedProfile, value))
+            {
+                return;
+            }
+
+            if (value is not null)
             {
                 ActiveProfile = value.DisplayName;
                 RefreshMappings(value);
                 RaisePropertyChanged(nameof(HasNoMappings));
             }
+
+            RefreshEditorCommands();
         }
     }
 
@@ -251,6 +376,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void OnHardwareEvent(object? sender, HardwareEvent hardwareEvent)
     {
+        if (hardwareEvent.Kind == HardwareEventKind.Input && hardwareEvent.Input is not null)
+        {
+            Dispatcher.UIThread.Post(() => CaptureLearnedInput(hardwareEvent.Input));
+            return;
+        }
+
         if (hardwareEvent.Kind is not (HardwareEventKind.Connected or HardwareEventKind.Disconnected))
         {
             return;
@@ -334,6 +465,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 ControlCatalogAircraft = "No aircraft detected";
                 _allControls.Clear();
                 Controls.Clear();
+                WritableControls.Clear();
+                SelectedCommandControl = null;
                 RaisePropertyChanged(nameof(ControlCountSummary));
                 RaisePropertyChanged(nameof(HasNoControls));
             }
@@ -359,6 +492,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void RefreshMappings(ProfileViewModel profile)
     {
+        SelectedMapping = null;
         Mappings.Clear();
         foreach (var device in profile.Profile.Devices)
         {
@@ -366,11 +500,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 foreach (var action in mapping.Actions)
                 {
-                    Mappings.Add(new MappingViewModel(
-                        device.DeviceType,
-                        mapping.ControlId,
-                        mapping.Kind,
-                        action));
+                    Mappings.Add(new MappingViewModel(mapping, action));
                 }
             }
         }
@@ -400,6 +530,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
                 _allControls.Clear();
                 _allControls.AddRange(controls.Select(control => new DcsBiosControlViewModel(control)));
+                RefreshWritableControlFilter();
+                SelectedCommandControl = null;
                 RefreshControlFilter();
                 MetadataStatus = controls.Count == 0
                     ? $"No metadata found for {aircraft}"
@@ -430,6 +562,228 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         RaisePropertyChanged(nameof(ControlCountSummary));
         RaisePropertyChanged(nameof(HasNoControls));
+    }
+
+    private void StartLearningInput()
+    {
+        IsLearningInput = !IsLearningInput;
+        EditorStatus = IsLearningInput
+            ? "Operate the PZ55 or PZ70 control you want to map"
+            : "Input learning cancelled";
+    }
+
+    private void CaptureLearnedInput(InputEvent input)
+    {
+        if (!IsLearningInput)
+        {
+            return;
+        }
+
+        if (input.Kind == InputEventKind.Released || !input.IsActive)
+        {
+            return;
+        }
+
+        LearnedDeviceType = input.DeviceType.ToString();
+        LearnedControlId = input.ControlId;
+        TriggerOptions.Clear();
+
+        if (input.Kind == InputEventKind.Clockwise)
+        {
+            TriggerOptions.Add(new MappingTriggerOption("Clockwise", PhysicalInputKind.EncoderClockwise, true));
+        }
+        else if (input.Kind == InputEventKind.CounterClockwise)
+        {
+            TriggerOptions.Add(new MappingTriggerOption("Counter-clockwise", PhysicalInputKind.EncoderCounterClockwise, true));
+        }
+        else
+        {
+            var kind = IsPersistentSwitch(input) ? PhysicalInputKind.Switch : PhysicalInputKind.Button;
+            var activeLabel = kind == PhysicalInputKind.Switch ? "On" : "Pressed";
+            var inactiveLabel = kind == PhysicalInputKind.Switch ? "Off" : "Released";
+            TriggerOptions.Add(new MappingTriggerOption(activeLabel, kind, true));
+            TriggerOptions.Add(new MappingTriggerOption(inactiveLabel, kind, false));
+        }
+
+        SelectedTriggerOption = TriggerOptions.FirstOrDefault(option => option.IsActive == input.IsActive)
+                                ?? TriggerOptions.FirstOrDefault();
+        IsLearningInput = false;
+        EditorStatus = $"Learned {LearnedDeviceType} / {LearnedControlId}";
+        RefreshEditorCommands();
+    }
+
+    private static bool IsPersistentSwitch(InputEvent input) =>
+        input.DeviceType == DeviceType.LogitechPz55 ||
+        input.DeviceType == DeviceType.LogitechPz70 &&
+        (input.ControlId.StartsWith("KNOB_", StringComparison.OrdinalIgnoreCase) ||
+         input.ControlId.Equals("AUTO_THROTTLE", StringComparison.OrdinalIgnoreCase));
+
+    private void SuggestMappingArgument()
+    {
+        if (SelectedCommandControl is not null && SelectedTriggerOption is not null)
+        {
+            MappingArgument = SelectedCommandControl.SuggestArgument(SelectedTriggerOption);
+        }
+    }
+
+    private bool CanAddMapping() =>
+        TryCreateDraftMapping(out _, updateStatus: false);
+
+    private bool TryCreateDraftMapping(out InputMapping? mapping, bool updateStatus)
+    {
+        mapping = null;
+        if (SelectedProfile is null ||
+            string.IsNullOrWhiteSpace(SelectedProfile.Profile.AircraftModule) ||
+            !string.Equals(SelectedProfile.Profile.AircraftModule, _dcsBiosClient.Aircraft, StringComparison.Ordinal))
+        {
+            if (updateStatus)
+            {
+                EditorStatus = "Start a mission and use the automatically selected aircraft profile";
+            }
+            return false;
+        }
+
+        if (LearnedDeviceType == "No input learned" || SelectedTriggerOption is null)
+        {
+            if (updateStatus)
+            {
+                EditorStatus = "Learn a physical panel input first";
+            }
+            return false;
+        }
+
+        if (SelectedCommandControl is null)
+        {
+            if (updateStatus)
+            {
+                EditorStatus = "Select a DCS-BIOS command";
+            }
+            return false;
+        }
+
+        var argument = MappingArgument.Trim();
+        if (!SelectedCommandControl.IsValidArgument(argument))
+        {
+            if (updateStatus)
+            {
+                EditorStatus = "The argument is not valid for the selected DCS-BIOS interface";
+            }
+            return false;
+        }
+
+        mapping = new InputMapping(
+            LearnedDeviceType,
+            LearnedControlId,
+            SelectedTriggerOption.Kind,
+            [new ActionDefinition("DCS-BIOS", SelectedCommandControl.Identifier, argument)],
+            SelectedTriggerOption.IsActive);
+        return true;
+    }
+
+    private async Task AddMappingAsync()
+    {
+        if (!TryCreateDraftMapping(out var mapping, updateStatus: true) || mapping is null || SelectedProfile is null)
+        {
+            return;
+        }
+
+        var updated = ProfileMappingEditor.Upsert(SelectedProfile.Profile, mapping);
+        if (!await TrySaveProfileAsync(updated).ConfigureAwait(true))
+        {
+            return;
+        }
+
+        ApplyUpdatedProfile(updated);
+        EditorStatus = $"Saved {mapping.ControlId} → {mapping.Actions[0].Command}";
+        _activitySink.Publish(new ActivityEvent(
+            DateTimeOffset.Now,
+            ActivityCategory.Mapping,
+            mapping.ControlId,
+            $"Saved DCS-BIOS mapping to {mapping.Actions[0].Command}"));
+    }
+
+    private void TestMapping()
+    {
+        if (!TryCreateDraftMapping(out var mapping, updateStatus: true) || mapping is null)
+        {
+            return;
+        }
+
+        var action = mapping.Actions[0];
+        EditorStatus = $"Safe test passed: {action.Command} {action.Argument} (not transmitted)";
+        _activitySink.Publish(new ActivityEvent(
+            DateTimeOffset.Now,
+            ActivityCategory.Mapping,
+            mapping.ControlId,
+            $"Preview only: DCS-BIOS → {action.Command} {action.Argument}"));
+    }
+
+    private async Task RemoveSelectedMappingAsync()
+    {
+        if (SelectedProfile is null || SelectedMapping is null)
+        {
+            return;
+        }
+
+        var removed = SelectedMapping.Mapping;
+        var updated = ProfileMappingEditor.Remove(SelectedProfile.Profile, removed);
+        if (!await TrySaveProfileAsync(updated).ConfigureAwait(true))
+        {
+            return;
+        }
+
+        ApplyUpdatedProfile(updated);
+        EditorStatus = $"Removed mapping for {removed.ControlId}";
+    }
+
+    private async Task<bool> TrySaveProfileAsync(AircraftProfile profile)
+    {
+        try
+        {
+            var path = Path.Combine(ProfileDirectory, ProfileMappingEditor.GetFileName(profile));
+            await _profileRepository.SaveAsync(profile, path).ConfigureAwait(true);
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            EditorStatus = $"Unable to save the profile: {exception.Message}";
+            _activitySink.Publish(new ActivityEvent(
+                DateTimeOffset.Now,
+                ActivityCategory.Error,
+                "Mapping editor",
+                exception.Message));
+            return false;
+        }
+    }
+
+    private void ApplyUpdatedProfile(AircraftProfile profile)
+    {
+        var index = Profiles.IndexOf(SelectedProfile!);
+        var updated = new ProfileViewModel(profile);
+        Profiles[index] = updated;
+        SelectedProfile = updated;
+    }
+
+    private void RefreshEditorCommands()
+    {
+        AddMappingCommand.RaiseCanExecuteChanged();
+        TestMappingCommand.RaiseCanExecuteChanged();
+        RemoveMappingCommand.RaiseCanExecuteChanged();
+    }
+
+    private void RefreshWritableControlFilter()
+    {
+        WritableControls.Clear();
+        foreach (var control in _allControls.Where(control =>
+                     control.CanReceiveCommands && control.Matches(MappingCommandSearchText)))
+        {
+            WritableControls.Add(control);
+        }
+
+        if (SelectedCommandControl is not null && !WritableControls.Contains(SelectedCommandControl))
+        {
+            SelectedCommandControl = null;
+        }
     }
 
     private void RefreshActivities()
