@@ -11,7 +11,7 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> Version 0.6.0 adds tested PZ55 gear LEDs and PZ70 LCD/autopilot LED output, alongside
+> Version 0.6.1 adds tested PZ55 gear LEDs and PZ70 LCD/autopilot LED output, alongside
 > read-only DCS-BIOS monitoring, profiles, and the interactive mapping editor. No
 > commands are sent to DCS World.
 
@@ -46,6 +46,7 @@ with DCS World; this project does not reimplement DCS-BIOS.
 - PZ55 green, red, yellow, and off landing-gear LED states;
 - PZ70 upper/lower numeric LCD rendering and all autopilot LEDs;
 - hardware-only output test buttons on the Devices page.
+- a Live Monitor that begins empty for each new application session.
 
 ## Hardware validation
 

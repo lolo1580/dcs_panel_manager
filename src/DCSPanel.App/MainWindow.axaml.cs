@@ -52,6 +52,13 @@ public partial class MainWindow : Window
                 // Hardware monitoring must remain available when DCS-BIOS cannot bind.
             }
         }
+
+        // Startup, discovery, and initial DCS-BIOS connection messages are not part
+        // of the user's monitoring session. Begin with a clean, current-only log.
+        if (DataContext is MainWindowViewModel readyViewModel)
+        {
+            readyViewModel.BeginLiveMonitorSession();
+        }
     }
 
     protected override void OnClosed(EventArgs e)

@@ -12,6 +12,14 @@ project uses [Semantic Versioning](https://semver.org/).
 - controlled DCS-BIOS command transmission;
 - configurable DCS-BIOS-to-panel output bindings.
 
+## [0.6.1] - 2026-09-15
+
+### Changed
+
+- Live Monitor now starts empty on every application launch. Startup discovery and
+  connection messages are excluded; only activity produced after initialization is
+  displayed.
+
 ## [0.6.0] - 2026-09-15
 
 ### Added

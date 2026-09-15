@@ -27,6 +27,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly List<ActivityEventViewModel> _allActivities = [];
     private readonly List<DcsBiosControlViewModel> _allControls = [];
     private CancellationTokenSource? _metadataLoadCancellation;
+    private int _isLiveMonitorSessionActive;
     private bool _isSavingProfile;
     private string _dcsWorldStatus = "Disconnected";
     private string _dcsBiosStatus = "Disconnected";
@@ -96,6 +97,13 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public AsyncRelayCommand AddMappingCommand { get; }
     public RelayCommand TestMappingCommand { get; }
     public AsyncRelayCommand RemoveMappingCommand { get; }
+
+    public void BeginLiveMonitorSession()
+    {
+        _allActivities.Clear();
+        Activities.Clear();
+        Volatile.Write(ref _isLiveMonitorSessionActive, 1);
+    }
 
     public string DcsWorldStatus
     {
@@ -444,8 +452,18 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void OnActivityPublished(object? sender, ActivityEvent activity)
     {
+        if (Volatile.Read(ref _isLiveMonitorSessionActive) == 0)
+        {
+            return;
+        }
+
         Dispatcher.UIThread.Post(() =>
         {
+            if (Volatile.Read(ref _isLiveMonitorSessionActive) == 0)
+            {
+                return;
+            }
+
             var item = new ActivityEventViewModel(activity);
             _allActivities.Insert(0, item);
             if (_allActivities.Count > MaximumActivityCount)
