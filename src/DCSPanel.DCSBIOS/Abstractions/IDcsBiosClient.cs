@@ -16,6 +16,10 @@ public sealed record DcsBiosDataReceived(
     long PacketNumber,
     DateTimeOffset Timestamp);
 
+public sealed record DcsBiosOutputSubscription(
+    string ControlId,
+    DcsBiosOutputMetadata Output);
+
 public interface IDcsBiosClient : IAsyncDisposable
 {
     event EventHandler<DcsBiosStateChanged>? StateChanged;
@@ -29,6 +33,7 @@ public interface IDcsBiosClient : IAsyncDisposable
 
     Task ConnectAsync(CancellationToken cancellationToken = default);
     Task DisconnectAsync(CancellationToken cancellationToken = default);
+    void SetOutputSubscriptions(IReadOnlyList<DcsBiosOutputSubscription> subscriptions);
     ValueTask SendCommandAsync(string controlId, string argument, CancellationToken cancellationToken = default);
 }
 

@@ -193,6 +193,26 @@
 
             <TabItem>
                 <TabItem.Header>
+                    <Grid ColumnDefinitions="34,*"><Border Width="25" Height="25" CornerRadius="7" Background="#173B38"><TextBlock Text="O" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" /></Border><TextBlock Grid.Column="1" Text="Outputs" VerticalAlignment="Center" /></Grid>
+                </TabItem.Header>
+                <Border Background="#070C16">
+                    <Grid Margin="34,30" RowDefinitions="Auto,Auto,*" RowSpacing="18">
+                        <StackPanel Spacing="4"><TextBlock Text="Panel outputs" Classes="pageTitle" /><TextBlock Text="Connect DCS-BIOS data to PZ55 LEDs and PZ70 displays or autopilot LEDs for the active aircraft profile." Classes="muted" TextWrapping="Wrap" /></StackPanel>
+                        <Border Grid.Row="1" Classes="card">
+                            <Grid ColumnDefinitions="1.4*,1.2*,0.8*,Auto" ColumnSpacing="12">
+                                <StackPanel Spacing="6"><TextBlock Text="DCS-BIOS VALUE" Classes="eyebrow" /><ComboBox ItemsSource="{Binding OutputControls}" SelectedItem="{Binding SelectedOutputControl}" PlaceholderText="Select a data value"><ComboBox.ItemTemplate><DataTemplate x:DataType="vm:DcsBiosControlViewModel"><TextBlock Text="{Binding Identifier}" Classes="mono" FontSize="11" /></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="6"><TextBlock Text="PANEL TARGET" Classes="eyebrow" /><ComboBox ItemsSource="{Binding OutputTargets}" SelectedItem="{Binding SelectedOutputTarget}"><ComboBox.ItemTemplate><DataTemplate x:DataType="vm:OutputTargetOption"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
+                                <StackPanel Grid.Column="2" Spacing="6"><TextBlock Text="PZ55 COLOR" Classes="eyebrow" /><ComboBox ItemsSource="{Binding OutputColors}" SelectedItem="{Binding SelectedOutputColor}" /></StackPanel>
+                                <Button Grid.Column="3" Content="Add output" Command="{Binding AddOutputBindingCommand}" VerticalAlignment="Bottom" />
+                            </Grid>
+                        </Border>
+                        <Border Grid.Row="2" Classes="card" Padding="0"><Grid RowDefinitions="44,*"><Border Padding="16,0" BorderBrush="#1E2B40" BorderThickness="0,0,0,1"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="Saved output bindings" Classes="sectionTitle" VerticalAlignment="Center" /><Button Grid.Column="1" Content="Remove selected" Command="{Binding RemoveOutputBindingCommand}" Margin="0,5" /></Grid></Border><StackPanel Grid.Row="1" IsVisible="{Binding HasNoOutputBindings}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8"><TextBlock Text="No output binding in this profile" Classes="sectionTitle" /><TextBlock Text="Start a DCS mission, then select a value and a panel target above." Classes="muted" /></StackPanel><ListBox Grid.Row="1" ItemsSource="{Binding OutputBindings}" SelectedItem="{Binding SelectedOutputBinding}" Background="Transparent" BorderThickness="0"><ListBox.ItemTemplate><DataTemplate x:DataType="vm:OutputBindingViewModel"><Border BorderBrush="#152136" BorderThickness="0,0,0,1" Padding="16,11"><Grid ColumnDefinitions="150,180,*,100" ColumnSpacing="12"><TextBlock Text="{Binding DeviceType}" Classes="muted" /><TextBlock Grid.Column="1" Text="{Binding Target}" /><TextBlock Grid.Column="2" Text="{Binding ControlId}" Classes="mono" /><TextBlock Grid.Column="3" Text="{Binding Color}" Foreground="#6EE7B7" /></Grid></Border></DataTemplate></ListBox.ItemTemplate></ListBox></Grid></Border>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
                     <Grid ColumnDefinitions="34,*">
                         <Border Width="25" Height="25" CornerRadius="7" Background="#193148"><TextBlock Text="P" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" /></Border>
                         <TextBlock Grid.Column="1" Text="Devices" VerticalAlignment="Center" />

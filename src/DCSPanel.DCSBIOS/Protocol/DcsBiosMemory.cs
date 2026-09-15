@@ -35,4 +35,17 @@ public sealed class DcsBiosMemory
             return Encoding.ASCII.GetString(terminator >= 0 ? source[..terminator] : source).Trim();
         }
     }
+
+    public ushort ReadUnsignedWord(ushort address)
+    {
+        if (address > ushort.MaxValue - 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(address));
+        }
+
+        lock (_gate)
+        {
+            return (ushort)(_memory[address] | (_memory[address + 1] << 8));
+        }
+    }
 }

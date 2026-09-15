@@ -21,6 +21,9 @@ public sealed partial class UdpDcsBiosClient : IDcsBiosClient
     private readonly DcsBiosOptions _options;
     private readonly DcsBiosProtocolParser _parser = new();
     private readonly DcsBiosMemory _memory = new();
+    private readonly object _outputSubscriptionGate = new();
+    private IReadOnlyList<DcsBiosOutputSubscription> _outputSubscriptions = [];
+    private readonly Dictionary<string, object?> _lastOutputValues = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
     private CancellationTokenSource? _lifetime;
     private UdpClient? _udpClient;
@@ -141,6 +144,18 @@ public sealed partial class UdpDcsBiosClient : IDcsBiosClient
         }
     }
 
+    public void SetOutputSubscriptions(IReadOnlyList<DcsBiosOutputSubscription> subscriptions)
+    {
+        ArgumentNullException.ThrowIfNull(subscriptions);
+        lock (_outputSubscriptionGate)
+        {
+            _outputSubscriptions = subscriptions
+                .Where(subscription => !string.IsNullOrWhiteSpace(subscription.ControlId))
+                .ToArray();
+            _lastOutputValues.Clear();
+        }
+    }
+
     public ValueTask SendCommandAsync(
         string controlId,
         string argument,
@@ -232,6 +247,7 @@ public sealed partial class UdpDcsBiosClient : IDcsBiosClient
 
         if (string.Equals(_aircraft, aircraft, StringComparison.Ordinal))
         {
+            PublishConfiguredOutputValues();
             return;
         }
 
@@ -239,6 +255,66 @@ public sealed partial class UdpDcsBiosClient : IDcsBiosClient
         ValueChanged?.Invoke(this, new DcsBiosValueChanged("_ACFT_NAME", aircraft, now));
         SetState(_status, aircraft);
         PublishActivity(aircraft is null ? "Aircraft session ended" : $"Aircraft detected: {aircraft}");
+        PublishConfiguredOutputValues();
+    }
+
+    private void PublishConfiguredOutputValues()
+    {
+        List<DcsBiosValueChanged>? changed = null;
+        var now = DateTimeOffset.UtcNow;
+        lock (_outputSubscriptionGate)
+        {
+            foreach (var subscription in _outputSubscriptions)
+            {
+                object? value;
+                try
+                {
+                    value = ReadOutputValue(subscription.Output);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    continue;
+                }
+
+                if (_lastOutputValues.TryGetValue(subscription.ControlId, out var previous) &&
+                    Equals(previous, value))
+                {
+                    continue;
+                }
+
+                _lastOutputValues[subscription.ControlId] = value;
+                (changed ??= []).Add(new DcsBiosValueChanged(subscription.ControlId, value, now));
+            }
+        }
+
+        if (changed is not null)
+        {
+            foreach (var value in changed)
+            {
+                ValueChanged?.Invoke(this, value);
+            }
+        }
+    }
+
+    private object? ReadOutputValue(DcsBiosOutputMetadata output)
+    {
+        if (output.Address is not ushort address)
+        {
+            return null;
+        }
+
+        if (output.Type.Equals("string", StringComparison.OrdinalIgnoreCase))
+        {
+            return _memory.ReadNullTerminatedAscii(address, output.MaxLength ?? 1);
+        }
+
+        var value = _memory.ReadUnsignedWord(address);
+        if (output.Mask is ushort mask)
+        {
+            value = (ushort)(value & mask);
+        }
+
+        return output.ShiftBy is int shift ? value >> shift : value;
     }
 
     private void SetState(ConnectionStatus status, string? aircraft)

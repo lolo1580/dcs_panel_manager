@@ -49,6 +49,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private DcsBiosControlViewModel? _selectedCommandControl;
     private MappingTriggerOption? _selectedTriggerOption;
     private MappingViewModel? _selectedMapping;
+    private DcsBiosControlViewModel? _selectedOutputControl;
+    private OutputTargetOption? _selectedOutputTarget;
+    private OutputBindingViewModel? _selectedOutputBinding;
+    private PanelOutputColor _selectedOutputColor = PanelOutputColor.Green;
+    private Pz55GearLights _pz55Output = new(Pz55GearLightColor.Off, Pz55GearLightColor.Off, Pz55GearLightColor.Off);
+    private Pz70PanelOutput _pz70Output = new(null, null);
     private ProfileViewModel? _selectedProfile;
     private bool _showHardware = true;
     private bool _showMapping = true;
@@ -78,11 +84,18 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _hardwareService.HardwareEventOccurred += OnHardwareEvent;
         _activitySink.ActivityPublished += OnActivityPublished;
         _dcsBiosClient.StateChanged += OnDcsBiosStateChanged;
+        _dcsBiosClient.ValueChanged += OnDcsBiosValueChanged;
         _dcsBiosClient.DataReceived += OnDcsBiosDataReceived;
         LearnInputCommand = new RelayCommand(StartLearningInput);
         AddMappingCommand = new AsyncRelayCommand(AddMappingAsync, CanAddMapping);
         TestMappingCommand = new RelayCommand(TestMapping, CanAddMapping);
         RemoveMappingCommand = new AsyncRelayCommand(RemoveSelectedMappingAsync, () => !_isSavingProfile && SelectedMapping is not null);
+        AddOutputBindingCommand = new AsyncRelayCommand(AddOutputBindingAsync, CanAddOutputBinding);
+        RemoveOutputBindingCommand = new AsyncRelayCommand(RemoveSelectedOutputBindingAsync, () => !_isSavingProfile && SelectedOutputBinding is not null);
+        foreach (var target in Enum.GetValues<PanelOutputTarget>())
+        {
+            OutputTargets.Add(new OutputTargetOption(target, target.ToString()));
+        }
     }
 
     public ObservableCollection<DeviceViewModel> Devices { get; } = [];
@@ -92,11 +105,23 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ObservableCollection<DcsBiosControlViewModel> Controls { get; } = [];
     public ObservableCollection<DcsBiosControlViewModel> WritableControls { get; } = [];
     public ObservableCollection<MappingTriggerOption> TriggerOptions { get; } = [];
+    public ObservableCollection<DcsBiosControlViewModel> OutputControls { get; } = [];
+    public ObservableCollection<OutputTargetOption> OutputTargets { get; } = [];
+    public ObservableCollection<PanelOutputColor> OutputColors { get; } = [PanelOutputColor.Green, PanelOutputColor.Red, PanelOutputColor.Yellow];
+    public ObservableCollection<OutputBindingViewModel> OutputBindings { get; } = [];
 
     public RelayCommand LearnInputCommand { get; }
     public AsyncRelayCommand AddMappingCommand { get; }
     public RelayCommand TestMappingCommand { get; }
     public AsyncRelayCommand RemoveMappingCommand { get; }
+    public AsyncRelayCommand AddOutputBindingCommand { get; }
+    public AsyncRelayCommand RemoveOutputBindingCommand { get; }
+
+    public DcsBiosControlViewModel? SelectedOutputControl { get => _selectedOutputControl; set { if (SetProperty(ref _selectedOutputControl, value)) AddOutputBindingCommand.RaiseCanExecuteChanged(); } }
+    public OutputTargetOption? SelectedOutputTarget { get => _selectedOutputTarget; set { if (SetProperty(ref _selectedOutputTarget, value)) AddOutputBindingCommand.RaiseCanExecuteChanged(); } }
+    public PanelOutputColor SelectedOutputColor { get => _selectedOutputColor; set => SetProperty(ref _selectedOutputColor, value); }
+    public OutputBindingViewModel? SelectedOutputBinding { get => _selectedOutputBinding; set { if (SetProperty(ref _selectedOutputBinding, value)) RemoveOutputBindingCommand.RaiseCanExecuteChanged(); } }
+    public bool HasNoOutputBindings => OutputBindings.Count == 0;
 
     public void BeginLiveMonitorSession()
     {
@@ -289,6 +314,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 ActiveProfile = value.DisplayName;
                 RefreshMappings(value);
+                RefreshOutputBindings(value);
+                ResetPanelOutputs();
+                ConfigureOutputSubscriptions();
                 RaisePropertyChanged(nameof(HasNoMappings));
             }
 
@@ -409,6 +437,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 Devices.Add(new DeviceViewModel(
                     hardwareEvent.Device,
                     () => TestPanelOutputAsync(hardwareEvent.Device)));
+                _ = PushPanelOutputAsync(hardwareEvent.Device.Type);
             }
 
             RaisePropertyChanged(nameof(DeviceSummary));
@@ -566,6 +595,104 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
+    private void RefreshOutputBindings(ProfileViewModel profile)
+    {
+        SelectedOutputBinding = null;
+        OutputBindings.Clear();
+        foreach (var device in profile.Profile.Devices)
+        foreach (var binding in device.OutputBindings ?? [])
+            OutputBindings.Add(new OutputBindingViewModel(device.DeviceType, binding));
+        RaisePropertyChanged(nameof(HasNoOutputBindings));
+    }
+
+    private bool CanAddOutputBinding() => !_isSavingProfile && SelectedProfile is not null &&
+        SelectedOutputControl is not null && SelectedOutputTarget is not null &&
+        !string.IsNullOrWhiteSpace(SelectedProfile.Profile.AircraftModule) &&
+        string.Equals(SelectedProfile.Profile.AircraftModule, _dcsBiosClient.Aircraft, StringComparison.Ordinal);
+
+    private async Task AddOutputBindingAsync()
+    {
+        if (!CanAddOutputBinding() || SelectedProfile is null || SelectedOutputControl is null || SelectedOutputTarget is null) return;
+        var binding = new PanelOutputBinding(SelectedOutputTarget.Target, SelectedOutputControl.Identifier, SelectedOutputColor);
+        var original = SelectedProfile;
+        var updated = ProfileMappingEditor.UpsertOutput(original.Profile, binding);
+        if (!await TrySaveProfileAsync(updated).ConfigureAwait(true)) return;
+        ApplyUpdatedProfile(original, updated);
+        ConfigureOutputSubscriptions();
+    }
+
+    private async Task RemoveSelectedOutputBindingAsync()
+    {
+        if (SelectedProfile is null || SelectedOutputBinding is null) return;
+        var original = SelectedProfile;
+        var updated = ProfileMappingEditor.RemoveOutput(original.Profile, SelectedOutputBinding.Binding);
+        if (!await TrySaveProfileAsync(updated).ConfigureAwait(true)) return;
+        ApplyUpdatedProfile(original, updated);
+        ConfigureOutputSubscriptions();
+    }
+
+    private void ConfigureOutputSubscriptions()
+    {
+        var profile = SelectedProfile?.Profile;
+        if (profile is null || _allControls.Count == 0) { _dcsBiosClient.SetOutputSubscriptions([]); return; }
+        var subscriptions = profile.Devices.SelectMany(device => device.OutputBindings ?? [])
+            .Select(binding => new { binding, control = _allControls.FirstOrDefault(control => string.Equals(control.Identifier, binding.ControlId, StringComparison.OrdinalIgnoreCase)) })
+            .Where(item => item.control is not null)
+            .Select(item => new DcsBiosOutputSubscription(item.binding.ControlId, item.control!.Metadata.Outputs[0]))
+            .DistinctBy(subscription => subscription.ControlId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        _dcsBiosClient.SetOutputSubscriptions(subscriptions);
+    }
+
+    private void ApplyOutputValue(DcsBiosValueChanged value)
+    {
+        var bindings = SelectedProfile?.Profile.Devices.SelectMany(device => device.OutputBindings ?? [])
+            .Where(binding => string.Equals(binding.ControlId, value.ControlId, StringComparison.OrdinalIgnoreCase)).ToArray() ?? [];
+        foreach (var binding in bindings)
+        {
+            if (binding.Target.ToString().StartsWith("Pz55", StringComparison.Ordinal))
+            {
+                var color = IsOutputActive(value.Value) ? binding.Color switch { PanelOutputColor.Red => Pz55GearLightColor.Red, PanelOutputColor.Yellow => Pz55GearLightColor.Yellow, _ => Pz55GearLightColor.Green } : Pz55GearLightColor.Off;
+                _pz55Output = binding.Target switch { PanelOutputTarget.Pz55UpperGear => _pz55Output with { Upper = color }, PanelOutputTarget.Pz55LeftGear => _pz55Output with { Left = color }, _ => _pz55Output with { Right = color } };
+                _ = PushPanelOutputAsync(DeviceType.LogitechPz55);
+            }
+            else
+            {
+                _pz70Output = binding.Target switch
+                {
+                    PanelOutputTarget.Pz70UpperDisplay => _pz70Output with { UpperDisplay = ToOutputNumber(value.Value) },
+                    PanelOutputTarget.Pz70LowerDisplay => _pz70Output with { LowerDisplay = ToOutputNumber(value.Value) },
+                    _ => _pz70Output with { Lights = SetPz70Light(_pz70Output.Lights, binding.Target, IsOutputActive(value.Value)) }
+                };
+                _ = PushPanelOutputAsync(DeviceType.LogitechPz70);
+            }
+        }
+    }
+
+    private async Task PushPanelOutputAsync(DeviceType type)
+    {
+        var output = type == DeviceType.LogitechPz55 ? new Output(PanelOutputIds.Pz55GearLights, _pz55Output) : new Output(PanelOutputIds.Pz70Panel, _pz70Output);
+        foreach (var device in Devices.Where(device => device.Type == type))
+        {
+            try { await _hardwareService.SetOutputAsync(device.Id, output).ConfigureAwait(true); }
+            catch (Exception) { }
+        }
+    }
+
+    private void ResetPanelOutputs()
+    {
+        _pz55Output = new(Pz55GearLightColor.Off, Pz55GearLightColor.Off, Pz55GearLightColor.Off);
+        _pz70Output = new(null, null);
+    }
+
+    private static bool IsOutputActive(object? value) => ToOutputNumber(value) is int number && number != 0;
+    private static int? ToOutputNumber(object? value) => value switch { byte number => number, ushort number => number, int number => number, string text when int.TryParse(text, out var number) => number, _ => null };
+    private static Pz70AutopilotLights SetPz70Light(Pz70AutopilotLights lights, PanelOutputTarget target, bool active)
+    {
+        var flag = target switch { PanelOutputTarget.Pz70ApLight => Pz70AutopilotLights.Ap, PanelOutputTarget.Pz70HdgLight => Pz70AutopilotLights.Hdg, PanelOutputTarget.Pz70NavLight => Pz70AutopilotLights.Nav, PanelOutputTarget.Pz70IasLight => Pz70AutopilotLights.Ias, PanelOutputTarget.Pz70AltLight => Pz70AutopilotLights.Alt, PanelOutputTarget.Pz70VsLight => Pz70AutopilotLights.Vs, PanelOutputTarget.Pz70AprLight => Pz70AutopilotLights.Apr, _ => Pz70AutopilotLights.Rev };
+        return active ? lights | flag : lights & ~flag;
+    }
+
     private void OnDcsBiosDataReceived(object? sender, DcsBiosDataReceived data)
     {
         Dispatcher.UIThread.Post(() =>
@@ -573,6 +700,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             DcsBiosPacketCount = data.PacketNumber;
             LastDcsBiosData = $"{data.Timestamp.ToLocalTime():HH:mm:ss} - {data.ByteCount} bytes";
         });
+    }
+
+    private void OnDcsBiosValueChanged(object? sender, DcsBiosValueChanged value)
+    {
+        Dispatcher.UIThread.Post(() => ApplyOutputValue(value));
     }
 
     private async Task LoadMetadataAsync(string aircraft, CancellationToken cancellationToken)
@@ -590,6 +722,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
                 _allControls.Clear();
                 _allControls.AddRange(controls.Select(control => new DcsBiosControlViewModel(control)));
+                OutputControls.Clear();
+                foreach (var control in _allControls.Where(control => control.Metadata.Outputs.Count > 0)) OutputControls.Add(control);
+                ConfigureOutputSubscriptions();
                 RefreshWritableControlFilter();
                 SelectedCommandControl = null;
                 RefreshControlFilter();

@@ -6,6 +6,7 @@ namespace DCSPanel.App.ViewModels;
 public sealed class DeviceViewModel(DeviceDescriptor descriptor, Func<Task> testOutput)
 {
     public DeviceId Id { get; } = descriptor.Id;
+    public DeviceType Type { get; } = descriptor.Type;
     public string Model { get; } = descriptor.Model;
     public string VidPid { get; } = $"VID {descriptor.VendorId:X4} - PID {descriptor.ProductId:X4}";
     public string InstancePath { get; } = descriptor.InstancePath;

@@ -35,6 +35,8 @@ public sealed class DisconnectedDcsBiosClient : IDcsBiosClient
 
     public Task DisconnectAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
+    public void SetOutputSubscriptions(IReadOnlyList<DcsBiosOutputSubscription> subscriptions) { }
+
     public ValueTask SendCommandAsync(string controlId, string argument, CancellationToken cancellationToken = default) =>
         ValueTask.FromException(new NotSupportedException("DCS-BIOS command transmission is disabled in read-only mode."));
 

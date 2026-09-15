@@ -62,6 +62,36 @@ public static class ProfileMappingEditor
         return $"{safeName}.json";
     }
 
+    public static AircraftProfile UpsertOutput(AircraftProfile profile, PanelOutputBinding binding)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        ArgumentNullException.ThrowIfNull(binding);
+        var deviceType = binding.Target.ToString().StartsWith("Pz55", StringComparison.Ordinal)
+            ? "LogitechPz55"
+            : "LogitechPz70";
+        var devices = profile.Devices.ToList();
+        var index = devices.FindIndex(device => string.Equals(device.DeviceType, deviceType, StringComparison.OrdinalIgnoreCase));
+        var device = index >= 0
+            ? devices[index]
+            : new DeviceProfile(deviceType, null, PersistentSwitchSyncStrategy.NoSync, []);
+        var bindings = (device.OutputBindings ?? [])
+            .Where(existing => existing.Target != binding.Target)
+            .Append(binding)
+            .OrderBy(existing => existing.Target)
+            .ToArray();
+        var updated = device with { OutputBindings = bindings };
+        if (index >= 0) devices[index] = updated; else devices.Add(updated);
+        return profile with { Devices = devices };
+    }
+
+    public static AircraftProfile RemoveOutput(AircraftProfile profile, PanelOutputBinding binding) => profile with
+    {
+        Devices = profile.Devices.Select(device => device with
+        {
+            OutputBindings = (device.OutputBindings ?? []).Where(existing => !Equals(existing, binding)).ToArray()
+        }).ToArray()
+    };
+
     private static bool HasSameTrigger(InputMapping left, InputMapping right) =>
         string.Equals(left.DeviceType, right.DeviceType, StringComparison.OrdinalIgnoreCase) &&
         string.Equals(left.ControlId, right.ControlId, StringComparison.OrdinalIgnoreCase) &&

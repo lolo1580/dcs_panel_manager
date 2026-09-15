@@ -81,6 +81,19 @@ public sealed class ProfileValidator
                     errors.Add($"Mapping {mapping.ControlId} does not contain any actions.");
                 }
             }
+
+            if (device.OutputBindings is null)
+            {
+                continue;
+            }
+
+            foreach (var outputBinding in device.OutputBindings)
+            {
+                if (outputBinding is null || string.IsNullOrWhiteSpace(outputBinding.ControlId))
+                {
+                    errors.Add("Every panel output binding must declare a DCS-BIOS control.");
+                }
+            }
         }
 
         return new ProfileValidationResult(errors.Count == 0, errors);

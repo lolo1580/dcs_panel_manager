@@ -10,7 +10,8 @@ public sealed class ProfileViewModel(AircraftProfile profile)
     public string Aircraft => Profile.AircraftModule ?? "All aircraft (fallback)";
     public int DeviceCount => Profile.Devices.Count;
     public int MappingCount => Profile.Devices.Sum(device => device.Mappings.Count);
-    public string DevicesSummary => $"{DeviceCount} device type(s) · {MappingCount} mapping(s)";
+    public int OutputBindingCount => Profile.Devices.Sum(device => device.OutputBindings?.Count ?? 0);
+    public string DevicesSummary => $"{DeviceCount} device type(s) · {MappingCount} mapping(s) · {OutputBindingCount} output(s)";
     public string SyncStrategy => Profile.Devices.Count == 0
         ? "No device strategy"
         : string.Join(", ", Profile.Devices.Select(device => device.SwitchSync).Distinct());
