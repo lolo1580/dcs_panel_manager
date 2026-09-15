@@ -7,16 +7,33 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-
-- end-to-end UDP integration coverage for automatic aircraft detection from the
-  DCS-BIOS `_ACFT_NAME` metadata stream.
-
 ### Planned
 
 - profile and mapping editor;
 - controlled DCS-BIOS command transmission;
 - PZ55 LED and PZ70 LCD/LED output.
+
+## [0.4.0] - 2026-09-15
+
+DCS-BIOS control catalog milestone.
+
+### Added
+
+- searchable DCS-BIOS control catalog for the aircraft detected in the active mission;
+- category, identifier, control type, input interface, output type, and description
+  columns;
+- cancellation of stale metadata loads when the active aircraft changes;
+- end-to-end UDP integration coverage for automatic aircraft detection from the
+  DCS-BIOS `_ACFT_NAME` metadata stream.
+
+### Safety
+
+- the catalog is read-only and does not transmit commands to DCS World;
+- rapidly switching aircraft cannot display metadata from the previous aircraft.
+
+### Changed
+
+- bumped the project version to `0.4.0`.
 
 ## [0.3.2] - 2026-09-14
 

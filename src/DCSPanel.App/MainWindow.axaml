@@ -371,6 +371,67 @@
                                     </StackPanel>
                                 </Border>
                             </Grid>
+                            <Border Classes="card" Padding="0" ClipToBounds="True" MinHeight="360">
+                                <Grid RowDefinitions="Auto,40,320">
+                                    <Border Padding="18,15" BorderBrush="#1E2B40" BorderThickness="0,0,0,1">
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                                            <StackPanel Spacing="3">
+                                                <TextBlock Text="Available controls" Classes="sectionTitle" />
+                                                <TextBlock Text="Commands exposed by DCS-BIOS for the detected aircraft" Classes="muted" FontSize="12" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="AIRCRAFT" Classes="eyebrow" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding ControlCatalogAircraft}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+                                            <TextBox Grid.Column="2"
+                                                     Width="290"
+                                                     Text="{Binding ControlSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                                     PlaceholderText="Search identifier, category, description..."
+                                                     VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                    <Border Grid.Row="1" Background="#0C1422" BorderBrush="#1E2B40" BorderThickness="0,0,0,1" Padding="16,0">
+                                        <Grid ColumnDefinitions="145,210,105,145,105,*" ColumnSpacing="12">
+                                            <TextBlock Text="CATEGORY" Classes="eyebrow" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="IDENTIFIER" Classes="eyebrow" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Text="TYPE" Classes="eyebrow" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="3" Text="INPUT" Classes="eyebrow" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="4" Text="OUTPUT" Classes="eyebrow" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="5" Text="DESCRIPTION" Classes="eyebrow" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                    <Grid Grid.Row="2">
+                                        <StackPanel IsVisible="{Binding HasNoControls}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="7">
+                                            <Border Width="46" Height="46" CornerRadius="23" Background="#18302E">
+                                                <TextBlock Text="B" Foreground="#6EE7B7" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="No controls to display" Classes="sectionTitle" HorizontalAlignment="Center" />
+                                            <TextBlock Text="Start a DCS mission or clear the search field." Classes="muted" />
+                                        </StackPanel>
+                                        <ListBox ItemsSource="{Binding Controls}" Background="Transparent" BorderThickness="0">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:DcsBiosControlViewModel">
+                                                    <Border BorderBrush="#152136" BorderThickness="0,0,0,1" Padding="16,10">
+                                                        <Grid ColumnDefinitions="145,210,105,145,105,*" ColumnSpacing="12">
+                                                            <TextBlock Text="{Binding Category}" Classes="muted" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Grid.Column="1" Text="{Binding Identifier}" Classes="mono" Foreground="#7DD3FC" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Grid.Column="2" Text="{Binding ControlType}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Grid.Column="3" Text="{Binding InputSummary}" Foreground="#A7F3D0" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Grid.Column="4" Text="{Binding OutputSummary}" Classes="muted" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Grid.Column="5" Text="{Binding Description}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                        <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,14,12" Classes="chip">
+                                            <TextBlock Text="{Binding ControlCountSummary}" Classes="muted" FontSize="10" />
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>

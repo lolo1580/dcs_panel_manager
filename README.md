@@ -11,8 +11,8 @@ The first supported devices are:
 The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary interface
 with DCS World; this project does not reimplement DCS-BIOS.
 
-> Version 0.3.2 adds read-only DCS-BIOS monitoring, automatic profile selection, a mapping
-> browser, and a refined cockpit-inspired UI.
+> Version 0.4.0 adds read-only DCS-BIOS monitoring, automatic profile selection, a
+> searchable aircraft control catalog, and a refined cockpit-inspired UI.
 > No commands are sent to DCS World or
 > to panel LED/LCD outputs yet.
 
@@ -39,6 +39,7 @@ with DCS World; this project does not reimplement DCS-BIOS.
 - validated JSON profile catalog plus automatically generated starters for every aircraft
   and helicopter exposed by the installed DCS-BIOS metadata;
 - automatic aircraft profile selection with Generic fallback;
+- searchable DCS-BIOS control catalog for the aircraft detected in the active mission;
 - data-driven Profiles and Mappings pages.
 
 ## Hardware validation
@@ -62,7 +63,8 @@ The application currently contains these pages:
 - **Devices**: detailed cards for every detected panel and instance;
 - **Live Monitor**: structured and filterable event console for HID, mapping, DCS-BIOS,
   and error events;
-- **DCS-BIOS**: connection, packet, aircraft metadata, and read-only safety status;
+- **DCS-BIOS**: connection status and a searchable catalog of the active aircraft's
+  identifiers, command interfaces, outputs, and descriptions;
 - **Profiles**: selectable catalog with aircraft, device, mapping, and safety details;
 - **Mappings**: active-profile mapping browser;
 - **Settings**: current safe configuration and upcoming preferences.

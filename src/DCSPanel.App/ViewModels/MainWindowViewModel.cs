@@ -22,6 +22,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly string _dcsBiosEndpoint;
     private readonly string _profileDirectory;
     private readonly List<ActivityEventViewModel> _allActivities = [];
+    private readonly List<DcsBiosControlViewModel> _allControls = [];
+    private CancellationTokenSource? _metadataLoadCancellation;
     private string _dcsWorldStatus = "Disconnected";
     private string _dcsBiosStatus = "Disconnected";
     private IBrush _dcsWorldStatusBrush = Brush.Parse("#F87171");
@@ -31,6 +33,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private long _dcsBiosPacketCount;
     private string _lastDcsBiosData = "No data received";
     private string _activeProfile = "Loading...";
+    private string _controlCatalogAircraft = "No aircraft detected";
+    private string _controlSearchText = string.Empty;
     private ProfileViewModel? _selectedProfile;
     private bool _showHardware = true;
     private bool _showMapping = true;
@@ -65,6 +69,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ObservableCollection<ActivityEventViewModel> Activities { get; } = [];
     public ObservableCollection<ProfileViewModel> Profiles { get; } = [];
     public ObservableCollection<MappingViewModel> Mappings { get; } = [];
+    public ObservableCollection<DcsBiosControlViewModel> Controls { get; } = [];
 
     public string DcsWorldStatus
     {
@@ -116,6 +121,27 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public string DcsBiosEndpoint => _dcsBiosEndpoint;
     public string MetadataDirectory => _metadataProvider.MetadataDirectory ?? "DCS-BIOS is not installed in Saved Games";
+    public string ControlCatalogAircraft
+    {
+        get => _controlCatalogAircraft;
+        private set => SetProperty(ref _controlCatalogAircraft, value);
+    }
+
+    public string ControlSearchText
+    {
+        get => _controlSearchText;
+        set
+        {
+            if (SetProperty(ref _controlSearchText, value))
+            {
+                RefreshControlFilter();
+            }
+        }
+    }
+
+    public string ControlCountSummary => _allControls.Count == Controls.Count
+        ? $"{Controls.Count} controls"
+        : $"{Controls.Count} of {_allControls.Count} controls";
     public string ActiveProfile
     {
         get => _activeProfile;
@@ -138,6 +164,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public bool HasNoProfiles => Profiles.Count == 0;
     public bool HasNoMappings => Mappings.Count == 0;
+    public bool HasNoControls => Controls.Count == 0;
     public string ProfileDirectory => _profileDirectory;
     public string DeviceSummary => Devices.Count == 0 ? "No panels detected" : $"{Devices.Count} panel(s) connected";
     public bool HasNoDevices => Devices.Count == 0;
@@ -292,9 +319,23 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 : Brush.Parse("#F87171");
             DetectedAircraft = state.Aircraft ?? "-";
             SelectProfileForAircraft(state.Aircraft);
+            _metadataLoadCancellation?.Cancel();
+            _metadataLoadCancellation?.Dispose();
+            _metadataLoadCancellation = null;
             if (state.Aircraft is not null)
             {
-                _ = LoadMetadataAsync(state.Aircraft);
+                _metadataLoadCancellation = new CancellationTokenSource();
+                ControlCatalogAircraft = state.Aircraft;
+                MetadataStatus = $"Loading controls for {state.Aircraft}...";
+                _ = LoadMetadataAsync(state.Aircraft, _metadataLoadCancellation.Token);
+            }
+            else
+            {
+                ControlCatalogAircraft = "No aircraft detected";
+                _allControls.Clear();
+                Controls.Clear();
+                RaisePropertyChanged(nameof(ControlCountSummary));
+                RaisePropertyChanged(nameof(HasNoControls));
             }
         });
     }
@@ -344,14 +385,29 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         });
     }
 
-    private async Task LoadMetadataAsync(string aircraft)
+    private async Task LoadMetadataAsync(string aircraft, CancellationToken cancellationToken)
     {
         try
         {
-            var controls = await _metadataProvider.GetControlsAsync(aircraft).ConfigureAwait(false);
-            Dispatcher.UIThread.Post(() => MetadataStatus = controls.Count == 0
-                ? $"No metadata found for {aircraft}"
-                : $"{controls.Count} controls loaded for {aircraft}");
+            var controls = await _metadataProvider.GetControlsAsync(aircraft, cancellationToken).ConfigureAwait(false);
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (cancellationToken.IsCancellationRequested ||
+                    !string.Equals(_dcsBiosClient.Aircraft, aircraft, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                _allControls.Clear();
+                _allControls.AddRange(controls.Select(control => new DcsBiosControlViewModel(control)));
+                RefreshControlFilter();
+                MetadataStatus = controls.Count == 0
+                    ? $"No metadata found for {aircraft}"
+                    : $"{controls.Count} controls loaded for {aircraft}";
+            });
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
         catch (Exception exception)
         {
@@ -362,6 +418,18 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 exception.Message));
             Dispatcher.UIThread.Post(() => MetadataStatus = "Metadata loading failed");
         }
+    }
+
+    private void RefreshControlFilter()
+    {
+        Controls.Clear();
+        foreach (var control in _allControls.Where(control => control.Matches(ControlSearchText)))
+        {
+            Controls.Add(control);
+        }
+
+        RaisePropertyChanged(nameof(ControlCountSummary));
+        RaisePropertyChanged(nameof(HasNoControls));
     }
 
     private void RefreshActivities()
@@ -384,6 +452,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        _metadataLoadCancellation?.Cancel();
+        _metadataLoadCancellation?.Dispose();
         _hardwareService.HardwareEventOccurred -= OnHardwareEvent;
         _activitySink.ActivityPublished -= OnActivityPublished;
         _dcsBiosClient.StateChanged -= OnDcsBiosStateChanged;
