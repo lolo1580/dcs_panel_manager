@@ -7,6 +7,11 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- end-to-end UDP integration coverage for automatic aircraft detection from the
+  DCS-BIOS `_ACFT_NAME` metadata stream.
+
 ### Planned
 
 - profile and mapping editor;

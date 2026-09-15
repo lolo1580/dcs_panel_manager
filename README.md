@@ -104,7 +104,7 @@ dotnet build .\DCSPanelManager.sln -c Release
 dotnet test .\DCSPanelManager.sln -c Release --no-build
 ```
 
-Current reference status: **0 warnings, 0 errors, 18 passing tests**.
+Current reference status: **0 warnings, 0 errors, 19 passing tests**.
 
 ## Run the application
 
