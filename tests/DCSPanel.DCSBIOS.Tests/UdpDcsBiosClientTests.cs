@@ -10,6 +10,23 @@ namespace DCSPanel.DCSBIOS.Tests;
 public sealed class UdpDcsBiosClientTests
 {
     [Fact]
+    public async Task SendCommandWritesNewlineTerminatedDcsBiosDatagram()
+    {
+        using var listener = new UdpClient(new IPEndPoint(IPAddress.Loopback, 0));
+        var commandPort = ((IPEndPoint)listener.Client.LocalEndPoint!).Port;
+        var options = new DcsBiosOptions { CommandPort = commandPort };
+        await using var client = new UdpDcsBiosClient(
+            NullLogger<UdpDcsBiosClient>.Instance,
+            new ActivityHub(),
+            options);
+
+        await client.SendCommandAsync("MASTER_ARM", "1");
+        var result = await listener.ReceiveAsync().WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.Equal("MASTER_ARM 1\n", Encoding.ASCII.GetString(result.Buffer));
+    }
+
+    [Fact]
     public async Task ReceivePublishesDetectedAircraftFromDcsBiosMetadata()
     {
         var port = ReserveUdpPort();

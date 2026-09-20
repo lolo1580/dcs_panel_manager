@@ -6,6 +6,8 @@ public sealed class DcsBiosOptions
 {
     public IPAddress MulticastAddress { get; init; } = IPAddress.Parse("239.255.50.10");
     public int ReceivePort { get; init; } = 5010;
+    public IPAddress CommandAddress { get; init; } = IPAddress.Loopback;
+    public int CommandPort { get; init; } = 7778;
     public TimeSpan InactivityTimeout { get; init; } = TimeSpan.FromSeconds(3);
     public TimeSpan MonitorInterval { get; init; } = TimeSpan.FromSeconds(1);
 }

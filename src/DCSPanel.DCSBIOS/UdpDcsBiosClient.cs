@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using DCSPanel.Core.Events;
 using DCSPanel.Core.State;
 using DCSPanel.DCSBIOS.Abstractions;
@@ -9,8 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace DCSPanel.DCSBIOS;
 
 /// <summary>
-/// Read-only UDP listener for the official DCS-BIOS export stream.
-/// This class deliberately owns no command-transmission socket.
+/// UDP client for the official DCS-BIOS export and import protocols.
 /// </summary>
 public sealed partial class UdpDcsBiosClient : IDcsBiosClient
 {
@@ -156,12 +156,21 @@ public sealed partial class UdpDcsBiosClient : IDcsBiosClient
         }
     }
 
-    public ValueTask SendCommandAsync(
+    public async ValueTask SendCommandAsync(
         string controlId,
         string argument,
-        CancellationToken cancellationToken = default) =>
-        ValueTask.FromException(new NotSupportedException(
-            "Command transmission is disabled in the read-only DCS-BIOS milestone."));
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(controlId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(argument);
+        if (controlId.Any(char.IsWhiteSpace) || argument.Any(character => character is '\r' or '\n'))
+            throw new ArgumentException("DCS-BIOS commands must be a single control and argument line.");
+
+        using var sender = new UdpClient(AddressFamily.InterNetwork);
+        var payload = Encoding.ASCII.GetBytes($"{controlId} {argument}\n");
+        await sender.SendAsync(payload, new IPEndPoint(_options.CommandAddress, _options.CommandPort), cancellationToken).ConfigureAwait(false);
+        PublishActivity($"TX {controlId} {argument}");
+    }
 
     public async ValueTask DisposeAsync()
     {

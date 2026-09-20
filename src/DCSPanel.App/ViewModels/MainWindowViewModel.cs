@@ -60,6 +60,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private bool _showMapping = true;
     private bool _showDcsBios = true;
     private bool _showErrors = true;
+    private bool _isCommandTransmissionEnabled;
 
     public MainWindowViewModel(
         IHardwareService hardwareService,
@@ -325,6 +326,18 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     }
 
     public bool HasNoProfiles => Profiles.Count == 0;
+    public bool IsCommandTransmissionEnabled
+    {
+        get => _isCommandTransmissionEnabled;
+        set
+        {
+            if (SetProperty(ref _isCommandTransmissionEnabled, value))
+            {
+                RaisePropertyChanged(nameof(CommandTransmissionStatus));
+            }
+        }
+    }
+    public string CommandTransmissionStatus => IsCommandTransmissionEnabled ? "Enabled (live DCS-BIOS commands)" : "Disabled (safe mode)";
     public bool HasNoMappings => Mappings.Count == 0;
     public bool HasNoControls => Controls.Count == 0;
     public string ProfileDirectory => _profileDirectory;
@@ -415,7 +428,14 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         if (hardwareEvent.Kind == HardwareEventKind.Input && hardwareEvent.Input is not null)
         {
-            Dispatcher.UIThread.Post(() => CaptureLearnedInput(hardwareEvent.Input));
+            Dispatcher.UIThread.Post(() =>
+            {
+                CaptureLearnedInput(hardwareEvent.Input);
+                if (IsCommandTransmissionEnabled)
+                {
+                    _ = ProcessLiveMappingAsync(hardwareEvent.Input);
+                }
+            });
             return;
         }
 
@@ -819,6 +839,45 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         input.DeviceType == DeviceType.LogitechPz70 &&
         (input.ControlId.StartsWith("KNOB_", StringComparison.OrdinalIgnoreCase) ||
          input.ControlId.Equals("AUTO_THROTTLE", StringComparison.OrdinalIgnoreCase));
+
+    private async Task ProcessLiveMappingAsync(InputEvent input)
+    {
+        if (_dcsBiosClient.Status != ConnectionStatus.Connected || SelectedProfile is null)
+        {
+            return;
+        }
+
+        var kind = input.Kind switch
+        {
+            InputEventKind.Clockwise => PhysicalInputKind.EncoderClockwise,
+            InputEventKind.CounterClockwise => PhysicalInputKind.EncoderCounterClockwise,
+            _ when IsPersistentSwitch(input) => PhysicalInputKind.Switch,
+            _ => PhysicalInputKind.Button
+        };
+        var matching = SelectedProfile.Profile.Devices
+            .Where(device => string.Equals(device.DeviceType, input.DeviceType.ToString(), StringComparison.OrdinalIgnoreCase))
+            .SelectMany(device => device.Mappings)
+            .Where(mapping => string.Equals(mapping.ControlId, input.ControlId, StringComparison.OrdinalIgnoreCase) &&
+                              mapping.Kind == kind &&
+                              (mapping.IsActive is null || mapping.IsActive == input.IsActive))
+            .SelectMany(mapping => mapping.Actions)
+            .Where(action => action.Backend.Equals("DCS-BIOS", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        foreach (var action in matching)
+        {
+            if (string.IsNullOrWhiteSpace(action.Argument)) continue;
+            try
+            {
+                await _dcsBiosClient.SendCommandAsync(action.Command, action.Argument).ConfigureAwait(true);
+                _activitySink.Publish(new ActivityEvent(DateTimeOffset.Now, ActivityCategory.Mapping, input.ControlId, $"Sent DCS-BIOS → {action.Command} {action.Argument}"));
+            }
+            catch (Exception exception)
+            {
+                _activitySink.Publish(new ActivityEvent(DateTimeOffset.Now, ActivityCategory.Error, "DCS-BIOS command", exception.Message));
+            }
+        }
+    }
 
     private void SuggestMappingArgument()
     {

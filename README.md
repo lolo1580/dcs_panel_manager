@@ -12,8 +12,8 @@ The project uses C#, .NET 10, and Avalonia UI. DCS-BIOS will be the primary inte
 with DCS World; this project does not reimplement DCS-BIOS.
 
 > Version 0.6.1 adds tested PZ55 gear LEDs and PZ70 LCD/autopilot LED output, alongside
-> read-only DCS-BIOS monitoring, profiles, and the interactive mapping editor. No
-> commands are sent to DCS World.
+> DCS-BIOS monitoring, profiles, the interactive mapping editor, and opt-in live
+> DCS-BIOS commands.
 
 ## Current features
 
@@ -42,6 +42,8 @@ with DCS World; this project does not reimplement DCS-BIOS.
 - interactive mapping editor with physical input learning, command search, safe
   preview, automatic saving, and mapping removal;
 - separate On/Off and Pressed/Released triggers with DCS-BIOS argument suggestions;
+- opt-in DCS-BIOS command transmission from saved mappings, disabled by default at
+  every application start;
 - data-driven Profiles and Mappings pages.
 - PZ55 green, red, yellow, and off landing-gear LED states;
 - PZ70 upper/lower numeric LCD rendering and all autopilot LEDs;
@@ -94,6 +96,11 @@ With DCS World running in a mission, the application listens to the official exp
 multicast group `239.255.50.10:5010`. The Dashboard changes to **Connected** after a
 valid protocol frame is received and displays the active aircraft when available.
 
+To use saved mappings, open **Settings** and enable **DCS commands** only after
+DCS World and DCS-BIOS are running. The application sends newline-terminated DCS-BIOS
+commands to the local DCS-BIOS command listener on UDP port `7778`. This setting is
+intentionally disabled again whenever the application starts.
+
 Check the installed SDK:
 
 ```powershell
@@ -113,7 +120,7 @@ dotnet build .\DCSPanelManager.sln -c Release
 dotnet test .\DCSPanelManager.sln -c Release --no-build
 ```
 
-Current reference status: **0 warnings, 0 errors, 36 passing tests**.
+Current reference status: **0 warnings, 0 errors, 37 passing tests**.
 
 ## Run the application
 
@@ -154,7 +161,7 @@ src/
 |-- DCSPanel.Core/               Abstractions, events, and mapping engine
 |-- DCSPanel.Hardware/           Generic hardware models and contracts
 |-- DCSPanel.Hardware.Logitech/  HID enumeration and PZ55/PZ70 protocol
-|-- DCSPanel.DCSBIOS/            Read-only UDP transport, parser, and metadata import
+|-- DCSPanel.DCSBIOS/            UDP transport, parser, metadata import, and commands
 |-- DCSPanel.Profiles/           JSON profiles, persistence, and validation
 `-- DCSPanel.App/                Avalonia UI and dependency composition
 
@@ -192,7 +199,6 @@ Core, Hardware, Profiles, and DCSBIOS avoid unnecessary external dependencies.
 ### Milestone 3 - Mappings and commands
 
 - visual mapping editor;
-- controlled DCS-BIOS command transmission;
 - validated F-16C and F/A-18C mappings;
 - `NoSync` retained as the safe default strategy.
 
@@ -210,9 +216,10 @@ Core, Hardware, Profiles, and DCSBIOS avoid unnecessary external dependencies.
 
 ## Operational safety
 
-The current version opens only the DCS-BIOS export listener. It creates no command
-socket, sends no DCS-BIOS commands, and writes no LED or LCD data. Loading a profile
-does not automatically send physical switch positions to DCS.
+Live DCS-BIOS commands are disabled by default and require an explicit opt-in in
+**Settings** for the current application session. Loading a profile never sends
+physical switch positions automatically, and the `NoSync` strategy remains the
+default.
 
 ## License
 

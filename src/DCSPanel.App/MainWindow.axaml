@@ -87,7 +87,7 @@
                                     <StackPanel Spacing="7">
                                         <TextBlock Text="SYSTEM OVERVIEW" Classes="eyebrow" Foreground="#8FB9FF" />
                                         <TextBlock Text="Your cockpit bridge is ready" FontSize="23" FontWeight="SemiBold" />
-                                        <TextBlock Text="Panels remain available while DCS-BIOS waits for simulator data. No command can be transmitted in this milestone."
+                                        <TextBlock Text="Panels remain available while DCS-BIOS waits for simulator data. Enable live commands in Settings only when you are ready to control the active cockpit."
                                                    Classes="muted" MaxWidth="660" TextWrapping="Wrap" />
                                     </StackPanel>
                                     <Border Grid.Column="1" Width="68" Height="68" CornerRadius="34" Background="#183A36" VerticalAlignment="Center">
@@ -589,7 +589,7 @@
                                 <TextBlock Text="CURRENT CONFIGURATION" Classes="eyebrow" />
                                 <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="12">
                                     <TextBlock Text="DCS-BIOS endpoint" Classes="muted" /><TextBlock Grid.Column="1" Text="{Binding DcsBiosEndpoint}" Classes="mono" />
-                                    <TextBlock Grid.Row="1" Text="Command mode" Classes="muted" /><TextBlock Grid.Row="1" Grid.Column="1" Text="Disabled (read-only)" Foreground="#6EE7B7" />
+                                    <TextBlock Grid.Row="1" Text="Command mode" Classes="muted" /><StackPanel Grid.Row="1" Grid.Column="1" Spacing="5"><CheckBox Content="Enable DCS commands" IsChecked="{Binding IsCommandTransmissionEnabled}" /><TextBlock Text="{Binding CommandTransmissionStatus}" Foreground="#6EE7B7" FontSize="11" /><TextBlock Text="Only enable this while DCS World and DCS-BIOS are running. The setting resets to safe mode when the app restarts." Classes="muted" FontSize="10" TextWrapping="Wrap" /></StackPanel>
                                     <TextBlock Grid.Row="2" Text="Profile sync" Classes="muted" /><TextBlock Grid.Row="2" Grid.Column="1" Text="NoSync" />
                                 </Grid>
                             </StackPanel>

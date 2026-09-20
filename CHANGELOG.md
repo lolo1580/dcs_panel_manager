@@ -7,9 +7,15 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- opt-in transmission of saved DCS-BIOS mappings to the local command listener;
+- a Settings switch for DCS commands, disabled by default every time the application
+  starts;
+- UDP integration coverage that verifies the command format and newline terminator.
+
 ### Planned
 
-- controlled DCS-BIOS command transmission;
 - configurable DCS-BIOS-to-panel output bindings.
 
 ## [0.6.1] - 2026-09-15
