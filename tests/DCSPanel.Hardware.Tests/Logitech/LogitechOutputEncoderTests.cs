@@ -30,7 +30,7 @@ public sealed class LogitechOutputEncoderTests
         Assert.Equal(new byte[]
         {
             0x00, (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', 0xEE,
-            (byte)'6', (byte)'7', (byte)'8', (byte)'9', 0x05
+            (byte)'6', (byte)'7', (byte)'8', (byte)'9', 0x05, 0xFF
         }, report);
     }
 

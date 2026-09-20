@@ -322,18 +322,7 @@ public sealed partial class LogitechHidService(
                     throw new InvalidOperationException("The panel is still opening. Try again in a moment.");
                 }
 
-                if (deviceType == DeviceType.LogitechPz70)
-                {
-                    // The Multi Panel exposes its displays and button LEDs as an
-                    // output report. HidD_SetFeature is rejected by its Windows
-                    // driver even though the same payload is valid on the output
-                    // endpoint.
-                    await Stream.WriteAsync(report, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    Stream.SetFeature(report);
-                }
+                Stream.SetFeature(report);
             }
             finally
             {

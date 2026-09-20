@@ -29,10 +29,13 @@ public static class LogitechOutputEncoder
     {
         ArgumentNullException.ThrowIfNull(panel);
 
-        var report = new byte[12];
+        // The Multi Panel requires its report ID, eleven display/LED bytes, and
+        // a trailing reserved byte. Windows rejects the shorter 12-byte form.
+        var report = new byte[13];
         report[0] = 0;
         Array.Fill(report, (byte)0xFF, 1, 10);
         report[11] = (byte)panel.Lights;
+        report[12] = 0xFF;
 
         if (panel.UpperDisplay is int upper)
         {
