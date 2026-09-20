@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "m-2000c",
+  "displayName": "Mirage 2000C",
+  "aircraftModule": "M-2000C",
+  "devices": [
+    {
+      "deviceType": "LogitechPz55", "deviceId": null, "switchSync": "NoSync",
+      "mappings": [
+        { "deviceType": "LogitechPz55", "controlId": "MASTER_BAT", "kind": "Switch", "isActive": true, "actions": [{ "backend": "DCS-BIOS", "command": "MAIN_BATT_SW", "argument": "1" }] },
+        { "deviceType": "LogitechPz55", "controlId": "MASTER_BAT", "kind": "Switch", "isActive": false, "actions": [{ "backend": "DCS-BIOS", "command": "MAIN_BATT_SW", "argument": "0" }] },
+        { "deviceType": "LogitechPz55", "controlId": "FUEL_PUMP", "kind": "Switch", "isActive": true, "actions": [{ "backend": "DCS-BIOS", "command": "ENG_FUEL_L_PUMP_SW", "argument": "1" }, { "backend": "DCS-BIOS", "command": "ENG_FUEL_R_PUMP_SW", "argument": "1" }] },
+        { "deviceType": "LogitechPz55", "controlId": "FUEL_PUMP", "kind": "Switch", "isActive": false, "actions": [{ "backend": "DCS-BIOS", "command": "ENG_FUEL_L_PUMP_SW", "argument": "0" }, { "backend": "DCS-BIOS", "command": "ENG_FUEL_R_PUMP_SW", "argument": "0" }] },
+        { "deviceType": "LogitechPz55", "controlId": "GEAR_UP", "kind": "Switch", "isActive": true, "actions": [{ "backend": "DCS-BIOS", "command": "LDG_LEV", "argument": "0" }] },
+        { "deviceType": "LogitechPz55", "controlId": "GEAR_DOWN", "kind": "Switch", "isActive": true, "actions": [{ "backend": "DCS-BIOS", "command": "LDG_LEV", "argument": "1" }] }
+      ]
+    },
+    {
+      "deviceType": "LogitechPz70", "deviceId": null, "switchSync": "NoSync",
+      "mappings": [
+        { "deviceType": "LogitechPz70", "controlId": "AP_BUTTON", "kind": "Button", "isActive": true, "actions": [{ "backend": "DCS-BIOS", "command": "AP_MASTER_BTN", "argument": "TOGGLE" }] }
+      ]
+    }
+  ]
+}

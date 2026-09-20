@@ -45,6 +45,8 @@ with DCS World; this project does not reimplement DCS-BIOS.
 - opt-in DCS-BIOS command transmission from saved mappings, disabled by default at
   every application start;
 - data-driven Profiles and Mappings pages.
+- ready-to-use PZ55/PZ70 starter mappings for the F-5E-3, F/A-18C, Mirage 2000C,
+  and F-16C;
 - PZ55 green, red, yellow, and off landing-gear LED states;
 - PZ70 upper/lower numeric LCD rendering and all autopilot LEDs;
 - hardware-only output test buttons on the Devices page.

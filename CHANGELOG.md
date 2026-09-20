@@ -13,6 +13,8 @@ project uses [Semantic Versioning](https://semver.org/).
 - a Settings switch for DCS commands, disabled by default every time the application
   starts;
 - UDP integration coverage that verifies the command format and newline terminator.
+- ready-to-use PZ55/PZ70 starter mappings for the F-5E-3, F/A-18C, Mirage 2000C,
+  and F-16C.
 
 ### Planned
 
