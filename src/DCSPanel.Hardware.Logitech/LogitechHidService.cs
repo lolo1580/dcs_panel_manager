@@ -79,7 +79,7 @@ public sealed partial class LogitechHidService(
         var reports = LogitechOutputEncoder.Encode(connected.Descriptor.Type, output);
         foreach (var report in reports)
         {
-            await connected.SetFeatureAsync(report, cancellationToken).ConfigureAwait(false);
+            await connected.SendOutputAsync(connected.Descriptor.Type, report, cancellationToken).ConfigureAwait(false);
         }
 
         activitySink.Publish(new ActivityEvent(
@@ -312,7 +312,7 @@ public sealed partial class LogitechHidService(
 
         public void Cancel() => _cancellation.Cancel();
 
-        public async Task SetFeatureAsync(byte[] report, CancellationToken cancellationToken)
+        public async Task SendOutputAsync(DeviceType deviceType, byte[] report, CancellationToken cancellationToken)
         {
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -322,7 +322,18 @@ public sealed partial class LogitechHidService(
                     throw new InvalidOperationException("The panel is still opening. Try again in a moment.");
                 }
 
-                Stream.SetFeature(report);
+                if (deviceType == DeviceType.LogitechPz70)
+                {
+                    // The Multi Panel exposes its displays and button LEDs as an
+                    // output report. HidD_SetFeature is rejected by its Windows
+                    // driver even though the same payload is valid on the output
+                    // endpoint.
+                    await Stream.WriteAsync(report, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    Stream.SetFeature(report);
+                }
             }
             finally
             {
