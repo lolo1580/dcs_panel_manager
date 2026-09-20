@@ -61,126 +61,46 @@
                 </TabItem.Header>
                 <Border Background="#0B0D0F">
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="34,30" Spacing="22" MaxWidth="1180" HorizontalAlignment="Stretch">
+                        <StackPanel Margin="34,30" Spacing="16" MaxWidth="1180" HorizontalAlignment="Stretch">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="Cockpit status" Classes="pageTitle" />
-                                    <TextBlock Text="Live status for DCS World, DCS-BIOS, panels and profile" Classes="muted" />
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="Mission panel" Classes="pageTitle" />
+                                    <TextBlock Text="System readiness and cockpit controls" Classes="muted" />
                                 </StackPanel>
                                 <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding CommandTransmissionStatus}" Foreground="#DDB354" FontSize="10" FontWeight="SemiBold" />
                                 </Border>
                             </Grid>
 
-                            <Border CornerRadius="12" Padding="22,20">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                        <GradientStop Color="#242820" Offset="0" />
-                                        <GradientStop Color="#171B1C" Offset="1" />
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
-                                    <StackPanel Spacing="7">
-                                        <TextBlock Text="PANEL INTEGRATION" Classes="eyebrow" Foreground="#DDB354" />
-                                        <TextBlock Text="Ready for a mission" FontSize="22" FontWeight="SemiBold" />
-                                        <TextBlock Text="Use the active profile to send commands from the PZ55 and PZ70. Command transmission remains disabled until explicitly enabled in Settings."
-                                                   Classes="muted" MaxWidth="660" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <Border Grid.Column="1" Width="52" Height="52" CornerRadius="10" Background="#3A321E" VerticalAlignment="Center">
-                                        <TextBlock Text="DCS" Foreground="#E7C46E" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Classes="card" Padding="0">
+                                <Grid ColumnDefinitions="1.25*,1.25*,0.8*,1.2*">
+                                    <Border Padding="18,15" BorderBrush="#30373B" BorderThickness="0,0,1,0">
+                                        <StackPanel Spacing="5"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="DCS WORLD" Classes="eyebrow" /><Ellipse Grid.Column="1" Width="8" Height="8" Fill="{Binding DcsWorldStatusBrush}" /></Grid><TextBlock Text="{Binding DcsWorldStatus}" FontWeight="SemiBold" FontSize="18" /><TextBlock Text="{Binding DetectedAircraft, StringFormat='Aircraft: {0}'}" Classes="muted" FontSize="11" /></StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="1" Padding="18,15" BorderBrush="#30373B" BorderThickness="0,0,1,0">
+                                        <StackPanel Spacing="5"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="DCS-BIOS LINK" Classes="eyebrow" /><Ellipse Grid.Column="1" Width="8" Height="8" Fill="{Binding DcsBiosStatusBrush}" /></Grid><TextBlock Text="{Binding DcsBiosStatus}" FontWeight="SemiBold" FontSize="18" /><TextBlock Text="{Binding DcsBiosPacketCount, StringFormat='Packets: {0}'}" Classes="muted" FontSize="11" /></StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="2" Padding="18,15" BorderBrush="#30373B" BorderThickness="0,0,1,0">
+                                        <StackPanel Spacing="5"><TextBlock Text="PANELS" Classes="eyebrow" /><TextBlock Text="{Binding Devices.Count}" FontWeight="SemiBold" FontSize="24" /><TextBlock Text="connected" Classes="muted" FontSize="11" /></StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="3" Padding="18,15">
+                                        <StackPanel Spacing="5"><TextBlock Text="ACTIVE PROFILE" Classes="eyebrow" /><TextBlock Text="{Binding ActiveProfile}" FontWeight="SemiBold" FontSize="18" TextTrimming="CharacterEllipsis" /><TextBlock Text="NoSync enabled" Classes="muted" FontSize="11" /></StackPanel>
                                     </Border>
                                 </Grid>
                             </Border>
 
-                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="14">
-                                <Border Classes="card">
-                                    <StackPanel Spacing="10">
-                                        <Grid ColumnDefinitions="*,Auto">
-                                            <TextBlock Text="DCS WORLD" Classes="eyebrow" />
-                                            <Ellipse Grid.Column="1" Width="8" Height="8" Fill="{Binding DcsWorldStatusBrush}" />
-                                        </Grid>
-                                        <TextBlock Text="{Binding DcsWorldStatus}" Classes="statusValue" />
-                                        <TextBlock Text="{Binding DetectedAircraft, StringFormat='Aircraft: {0}'}" Classes="muted" FontSize="12" />
-                                    </StackPanel>
+                            <Grid ColumnDefinitions="1.4*,0.9*" ColumnSpacing="16">
+                                <Border Classes="card" MinHeight="330">
+                                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
+                                        <Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="2"><TextBlock Text="Panel rack" Classes="sectionTitle" /><TextBlock Text="Detected hardware and connection state" Classes="muted" FontSize="12" /></StackPanel><TextBlock Grid.Column="1" Text="LIVE" Foreground="#DDB354" FontSize="10" FontWeight="Bold" LetterSpacing="1" VerticalAlignment="Center" /></Grid>
+                                        <StackPanel Grid.Row="1" Spacing="10"><TextBlock IsVisible="{Binding HasNoDevices}" Text="No compatible panel detected" Classes="muted" Margin="0,18" /><ItemsControl ItemsSource="{Binding Devices}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:DeviceViewModel"><Border Classes="subtleCard"><Grid ColumnDefinitions="44,*,Auto" ColumnSpacing="14"><Border Width="40" Height="40" CornerRadius="6" Background="#30382D"><TextBlock Text="P" Foreground="#E7C46E" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2"><TextBlock Text="{Binding Model}" FontWeight="SemiBold" /><TextBlock Text="{Binding VidPid}" Classes="muted mono" FontSize="11" /></StackPanel><StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center"><Ellipse Width="7" Height="7" Fill="#5DD6A3" /><TextBlock Text="{Binding State}" FontSize="11" /></StackPanel></Grid></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel>
+                                        <TextBlock Grid.Row="2" Text="Open Devices for hardware diagnostics and output tests." Classes="muted" FontSize="11" />
+                                    </Grid>
                                 </Border>
-                                <Border Grid.Column="1" Classes="card">
-                                    <StackPanel Spacing="10">
-                                        <Grid ColumnDefinitions="*,Auto">
-                                            <TextBlock Text="DCS-BIOS" Classes="eyebrow" />
-                                            <Ellipse Grid.Column="1" Width="8" Height="8" Fill="{Binding DcsBiosStatusBrush}" />
-                                        </Grid>
-                                        <TextBlock Text="{Binding DcsBiosStatus}" Classes="statusValue" />
-                                        <TextBlock Text="{Binding DcsBiosPacketCount, StringFormat='Packets: {0}'}" Classes="muted" FontSize="12" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Grid.Column="2" Classes="card">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="DEVICES" Classes="eyebrow" />
-                                        <TextBlock Text="{Binding Devices.Count}" Classes="statusValue" />
-                                        <TextBlock Text="Compatible panels online" Classes="muted" FontSize="12" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Grid.Column="3" Classes="card">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="ACTIVE PROFILE" Classes="eyebrow" />
-                                        <TextBlock Text="{Binding ActiveProfile}" Classes="statusValue" />
-                                        <TextBlock Text="Safe strategy: NoSync" Classes="muted" FontSize="12" />
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-
-                            <Grid ColumnDefinitions="1.35*,*" ColumnSpacing="14">
-                                <Border Classes="card">
-                                    <StackPanel Spacing="15">
-                                        <Grid ColumnDefinitions="*,Auto">
-                                            <StackPanel>
-                                                <TextBlock Text="Connected hardware" Classes="sectionTitle" />
-                                                <TextBlock Text="Logitech / Saitek flight panels" Classes="muted" FontSize="12" />
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="LIVE" Foreground="#34D399" FontSize="10" FontWeight="Bold" LetterSpacing="1" />
-                                        </Grid>
-                                        <TextBlock IsVisible="{Binding HasNoDevices}" Text="No compatible panel detected" Classes="muted" Margin="0,8" />
-                                        <ItemsControl ItemsSource="{Binding Devices}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate x:DataType="vm:DeviceViewModel">
-                                                    <Border Classes="subtleCard" Margin="0,0,0,8">
-                                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                                            <Border Width="32" Height="32" CornerRadius="8" Background="#18304B">
-                                                                <TextBlock Text="P" Foreground="#93C5FD" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                            </Border>
-                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                                <TextBlock Text="{Binding Model}" FontWeight="SemiBold" />
-                                                                <TextBlock Text="{Binding VidPid}" Classes="muted" FontSize="11" />
-                                                            </StackPanel>
-                                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                                                                <Ellipse Width="7" Height="7" Fill="#34D399" />
-                                                                <TextBlock Text="{Binding State}" FontSize="11" />
-                                                            </StackPanel>
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Grid.Column="1" Classes="card">
-                                    <StackPanel Spacing="15">
-                                        <TextBlock Text="DCS-BIOS activity" Classes="sectionTitle" />
-                                        <Border Classes="subtleCard">
-                                            <StackPanel Spacing="5">
-                                                <TextBlock Text="LAST DATA" Classes="eyebrow" />
-                                                <TextBlock Text="{Binding LastDcsBiosData}" Classes="mono" FontSize="12" />
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Classes="subtleCard">
-                                            <StackPanel Spacing="5">
-                                                <TextBlock Text="METADATA" Classes="eyebrow" />
-                                                <TextBlock Text="{Binding MetadataStatus}" TextWrapping="Wrap" />
-                                            </StackPanel>
-                                        </Border>
-                                    </StackPanel>
-                                </Border>
+                                <StackPanel Grid.Column="1" Spacing="16">
+                                    <Border Classes="card"><StackPanel Spacing="10"><TextBlock Text="Data feed" Classes="sectionTitle" /><TextBlock Text="LAST DCS-BIOS DATA" Classes="eyebrow" /><TextBlock Text="{Binding LastDcsBiosData}" Classes="mono" TextWrapping="Wrap" /><Border Height="1" Background="#30373B" /><TextBlock Text="{Binding MetadataStatus}" Classes="muted" TextWrapping="Wrap" /></StackPanel></Border>
+                                    <Border Classes="card"><StackPanel Spacing="8"><TextBlock Text="Before flying" Classes="sectionTitle" /><TextBlock Text="1. Start a mission in DCS World" Classes="muted" FontSize="12" /><TextBlock Text="2. Confirm the DCS-BIOS link is connected" Classes="muted" FontSize="12" /><TextBlock Text="3. Select the matching aircraft profile" Classes="muted" FontSize="12" /><TextBlock Text="4. Enable commands in Settings when ready" Classes="muted" FontSize="12" /></StackPanel></Border>
+                                </StackPanel>
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>
