@@ -14,23 +14,20 @@
         MinWidth="1180"
         MinHeight="700"
         WindowStartupLocation="CenterScreen">
-    <Grid RowDefinitions="72,*">
+    <Grid RowDefinitions="64,*">
         <Border Grid.Row="0"
                 Background="#0B1321"
                 BorderBrush="#1B293D"
                 BorderThickness="0,0,0,1"
-                Padding="22,0">
+                Padding="20,0">
             <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <Border Width="38" Height="38" CornerRadius="10" Background="#2563EB">
-                        <Grid>
-                            <Border Width="18" Height="3" CornerRadius="2" Background="White" VerticalAlignment="Center" />
-                            <Border Width="3" Height="18" CornerRadius="2" Background="White" HorizontalAlignment="Center" />
-                        </Grid>
+                    <Border Width="36" Height="36" CornerRadius="8" Background="#1D4ED8">
+                        <TextBlock Text="DP" Foreground="White" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel VerticalAlignment="Center" Spacing="1">
                         <TextBlock Text="DCS Panel Manager" FontWeight="SemiBold" FontSize="16" />
-                        <TextBlock Text="FLIGHT CONTROL WORKSPACE" Classes="eyebrow" FontSize="9" />
+                        <TextBlock Text="DCS-BIOS PANEL INTEGRATION" Classes="eyebrow" FontSize="9" />
                     </StackPanel>
                 </StackPanel>
 
@@ -57,7 +54,7 @@
                 <TabItem.Header>
                     <Grid ColumnDefinitions="34,*">
                         <Border Width="25" Height="25" CornerRadius="7" Background="#1E3150" VerticalAlignment="Center">
-                            <TextBlock Text="D" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" />
+                            <TextBlock Text="▦" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" />
                         </Border>
                         <TextBlock Grid.Column="1" Text="Dashboard" VerticalAlignment="Center" />
                     </Grid>
@@ -67,31 +64,30 @@
                         <StackPanel Margin="34,30" Spacing="22" MaxWidth="1180" HorizontalAlignment="Stretch">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
                                 <StackPanel Spacing="4">
-                                    <TextBlock Text="Dashboard" Classes="pageTitle" />
-                                    <TextBlock Text="Live overview of the simulator, integration, and connected panels" Classes="muted" />
+                                    <TextBlock Text="Overview" Classes="pageTitle" />
+                                    <TextBlock Text="DCS World, DCS-BIOS, connected panels and active profile" Classes="muted" />
                                 </StackPanel>
                                 <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center">
-                                    <TextBlock Text="READ-ONLY MODE" Foreground="#6EE7B7" FontSize="10" FontWeight="Bold" LetterSpacing="1" />
+                                    <TextBlock Text="{Binding CommandTransmissionStatus}" Foreground="#93C5FD" FontSize="10" FontWeight="SemiBold" />
                                 </Border>
                             </Grid>
 
-                            <Border CornerRadius="16" Padding="26,23">
+                            <Border CornerRadius="12" Padding="22,20">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                        <GradientStop Color="#172A4A" Offset="0" />
-                                        <GradientStop Color="#101B31" Offset="0.55" />
-                                        <GradientStop Color="#171A35" Offset="1" />
+                                        <GradientStop Color="#15243B" Offset="0" />
+                                        <GradientStop Color="#101A2A" Offset="1" />
                                     </LinearGradientBrush>
                                 </Border.Background>
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
                                     <StackPanel Spacing="7">
-                                        <TextBlock Text="SYSTEM OVERVIEW" Classes="eyebrow" Foreground="#8FB9FF" />
-                                        <TextBlock Text="Your cockpit bridge is ready" FontSize="23" FontWeight="SemiBold" />
-                                        <TextBlock Text="Panels remain available while DCS-BIOS waits for simulator data. Enable live commands in Settings only when you are ready to control the active cockpit."
+                                        <TextBlock Text="PANEL INTEGRATION" Classes="eyebrow" Foreground="#8FB9FF" />
+                                        <TextBlock Text="Operational status" FontSize="22" FontWeight="SemiBold" />
+                                        <TextBlock Text="Use the active profile to send commands from the PZ55 and PZ70. Command transmission remains disabled until explicitly enabled in Settings."
                                                    Classes="muted" MaxWidth="660" TextWrapping="Wrap" />
                                     </StackPanel>
-                                    <Border Grid.Column="1" Width="68" Height="68" CornerRadius="34" Background="#183A36" VerticalAlignment="Center">
-                                        <TextBlock Text="RX" Foreground="#6EE7B7" FontWeight="Bold" FontSize="17" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Border Grid.Column="1" Width="52" Height="52" CornerRadius="10" Background="#163353" VerticalAlignment="Center">
+                                        <TextBlock Text="DCS" Foreground="#93C5FD" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                 </Grid>
                             </Border>
@@ -193,7 +189,7 @@
 
             <TabItem>
                 <TabItem.Header>
-                    <Grid ColumnDefinitions="34,*"><Border Width="25" Height="25" CornerRadius="7" Background="#173B38"><TextBlock Text="O" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" /></Border><TextBlock Grid.Column="1" Text="Outputs" VerticalAlignment="Center" /></Grid>
+                    <Grid ColumnDefinitions="34,*"><Border Width="25" Height="25" CornerRadius="7" Background="#173B38"><TextBlock Text="◉" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" /></Border><TextBlock Grid.Column="1" Text="Outputs" VerticalAlignment="Center" /></Grid>
                 </TabItem.Header>
                 <Border Background="#070C16">
                     <Grid Margin="34,30" RowDefinitions="Auto,Auto,*" RowSpacing="18">
@@ -214,7 +210,7 @@
             <TabItem>
                 <TabItem.Header>
                     <Grid ColumnDefinitions="34,*">
-                        <Border Width="25" Height="25" CornerRadius="7" Background="#193148"><TextBlock Text="P" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" /></Border>
+                        <Border Width="25" Height="25" CornerRadius="7" Background="#193148"><TextBlock Text="⌘" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" /></Border>
                         <TextBlock Grid.Column="1" Text="Devices" VerticalAlignment="Center" />
                     </Grid>
                 </TabItem.Header>

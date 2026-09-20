@@ -15,22 +15,22 @@
             <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="TabItem">
-            <Setter Property="MinWidth" Value="208" />
-            <Setter Property="Height" Value="52" />
-            <Setter Property="Margin" Value="8,3" />
-            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="MinWidth" Value="216" />
+            <Setter Property="Height" Value="46" />
+            <Setter Property="Margin" Value="10,2" />
+            <Setter Property="Padding" Value="12,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="#8996AA" />
-            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="CornerRadius" Value="8" />
         </Style>
         <Style Selector="TabItem:pointerover">
             <Setter Property="Background" Value="#111B2D" />
             <Setter Property="Foreground" Value="#D7E1F1" />
         </Style>
         <Style Selector="TabItem:selected">
-            <Setter Property="Background" Value="#17243A" />
+            <Setter Property="Background" Value="#1A2B45" />
             <Setter Property="Foreground" Value="#FFFFFF" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
@@ -39,8 +39,8 @@
             <Setter Property="Background" Value="#101827" />
             <Setter Property="BorderBrush" Value="#1E2B40" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
-            <Setter Property="Padding" Value="22" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="20" />
         </Style>
         <Style Selector="Border.card:pointerover">
             <Setter Property="BorderBrush" Value="#334967" />
@@ -53,15 +53,15 @@
             <Setter Property="Padding" Value="14" />
         </Style>
         <Style Selector="Border.chip">
-            <Setter Property="Background" Value="#111C2D" />
-            <Setter Property="BorderBrush" Value="#22324A" />
+            <Setter Property="Background" Value="#0E1929" />
+            <Setter Property="BorderBrush" Value="#263954" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="16" />
             <Setter Property="Padding" Value="11,6" />
         </Style>
 
         <Style Selector="TextBlock.pageTitle">
-            <Setter Property="FontSize" Value="30" />
+            <Setter Property="FontSize" Value="28" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="LetterSpacing" Value="-0.4" />
         </Style>
@@ -81,7 +81,7 @@
             <Setter Property="Foreground" Value="#6F8099" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="LetterSpacing" Value="1.1" />
+            <Setter Property="LetterSpacing" Value="0.8" />
         </Style>
         <Style Selector="TextBlock.muted">
             <Setter Property="Foreground" Value="#8290A5" />
@@ -92,6 +92,25 @@
 
         <Style Selector="CheckBox.monitorFilter">
             <Setter Property="Foreground" Value="#AAB6C8" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#2457A8" />
+            <Setter Property="BorderBrush" Value="#3B6FC2" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#2F6AC6" />
+        </Style>
+        <Style Selector="TextBox, ComboBox">
+            <Setter Property="Background" Value="#0B1422" />
+            <Setter Property="BorderBrush" Value="#2A3B55" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="#19345A" />
         </Style>
     </Application.Styles>
 </Application>
